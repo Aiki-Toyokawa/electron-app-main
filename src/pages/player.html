@@ -1,0 +1,41 @@
+<!-- src/pages/player.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Video Player</title>
+  <link rel="stylesheet" href="../styles/global.css">
+  <style>
+    .container {
+      padding: 20px;
+    }
+    .video-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .video-item {
+      width: 200px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .video-item img {
+      user-select: none;
+      border-radius: 10px;
+      width: 100%;
+    }
+    .video-info {
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="videoList" class="video-list">
+      <!-- 動画リストがここに表示されます -->
+    </div>
+  </div>
+</body>
+</html>

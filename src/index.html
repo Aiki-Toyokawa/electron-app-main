@@ -1,0 +1,158 @@
+<!-- src/index.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>My Electron SPA</title>
+  <link rel="stylesheet" href="./styles/global.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #333;
+      color: white;
+      padding: 10px;
+      text-align: center;
+    }
+    nav a {
+      color: white;
+      margin: 0 20px;
+      text-decoration: none;
+    }
+    #content {
+      flex: 1;
+      padding: 20px;
+    }
+    /* フッターのスタイルを強化 */
+    footer {
+      background: #222;
+      color: #fff;
+      padding: 10px 20px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      display: none; /* 初期状態では非表示 */
+      align-items: center;
+      box-sizing: border-box;
+    }
+    /* フッター内のコンテンツを横並びに */
+    #footerContent {
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    /* 動画情報のスタイル */
+    #footerVideoInfo {
+      display: flex;
+      align-items: center;
+      margin-right: 20px;
+      flex-shrink: 0;
+    }
+    #footerThumbnail {
+      width: 50px;
+      height: 50px;
+      margin-right: 15px;
+      border-radius: 5px;
+      object-fit: cover; /* アスペクト比を維持 */
+    }
+    #footerTitle {
+      font-size: 16px;
+      font-weight: bold;
+      white-space: nowrap; /* 1行で表示 */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 150px; /* 必要に応じて調整 */
+    }
+    /* コントロールボタンのスタイル */
+    #footerControls {
+      display: flex;
+      align-items: center;
+      margin-right: 20px;
+      flex-shrink: 0;
+    }
+    #footerControls button {
+      margin: 0 5px;
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 20px;
+    }
+    #footerControls button:hover {
+      color: #1db954;
+    }
+    /* 再生バーと時間表示のスタイル */
+    #footerProgressContainer {
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+    #footerCurrentTime, #footerDuration {
+      font-size: 12px;
+      margin: 0 10px;
+      flex-shrink: 0;
+    }
+    #footerProgressBar {
+      flex: 1;
+      appearance: none;
+      height: 5px;
+      background: #444;
+      outline: none;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    #footerProgressBar::-webkit-slider-thumb {
+      appearance: none;
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>My Electron SPA</h1>
+    <nav>
+      <a href="#" data-page="home">Home</a>
+      <a href="#" data-page="about">About</a>
+      <a href="#" data-page="contact">Contact</a>
+      <a href="#" data-page="player">Player</a>
+    </nav>
+  </header>
+  <div id="content">
+    <!-- コンテンツがここに読み込まれます -->
+  </div>
+  <!-- フッターを追加 -->
+  <footer id="footer">
+    <div id="footerContent">
+      <!-- 動画情報を表示する要素 -->
+      <div id="footerVideoInfo">
+        <img id="footerThumbnail" src="" alt="">
+        <div id="footerTitle"></div>
+      </div>
+      <!-- コントロールボタン -->
+      <div id="footerControls">
+        <button id="prevButton">⏮</button>
+        <button id="playPauseButton">⏵︎</button>
+        <button id="nextButton">⏭</button>
+      </div>
+      <!-- 再生バーと時間表示 -->
+      <div id="footerProgressContainer">
+        <span id="footerCurrentTime">0:00</span>
+        <input type="range" id="footerProgressBar" value="0" min="0" max="100">
+        <span id="footerDuration">0:00</span>
+      </div>
+    </div>
+    <!-- 音声プレーヤー（非表示） -->
+    <audio id="footerAudio" src=""></audio>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>
