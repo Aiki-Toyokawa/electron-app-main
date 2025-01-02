@@ -1,4 +1,4 @@
-// main.js ,Don't trash this comment out
+// src/main.js
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
