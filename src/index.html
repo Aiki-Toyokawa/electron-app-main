@@ -1,3 +1,4 @@
+<!-- src/index.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -11,12 +12,17 @@
       font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
+      height: 100vh; /* ビューポート全体の高さを使用 */
     }
     header {
-      background: #333;
-      color: white;
-      padding: 10px;
-      text-align: center;
+      position: fixed;        /* ヘッダーを固定 */
+      top: 0;                 /* 画面の上部に配置 */
+      width: 100%;            /* 幅を画面全体に */
+      background: #333;       /* 背景色を維持 */
+      color: white;           /* テキスト色を維持 */
+      padding: 10px;          /* パディングを維持 */
+      text-align: center;     /* テキストを中央揃え */
+      z-index: 1000;          /* 他の要素より前面に表示 */
     }
     nav a {
       color: white;
@@ -25,7 +31,8 @@
     }
     #content {
       flex: 1;
-      padding: 20px;
+      padding: 80px 20px 20px 20px; /* 上部に80pxの余白を追加（ヘッダーの高さに合わせて調整） */
+      overflow-y: auto; /* コンテンツが多い場合にスクロール可能に */
     }
     /* フッターのスタイルを強化 */
     footer {
@@ -38,6 +45,7 @@
       display: none; /* 初期状態では非表示 */
       align-items: center;
       box-sizing: border-box;
+      z-index: 1000; /* ヘッダーと同様に前面に表示 */
     }
     /* フッター内のコンテンツを横並びに */
     #footerContent {
