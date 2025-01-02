@@ -1,4 +1,3 @@
-// src/app.js
 document.addEventListener('DOMContentLoaded', () => {
   const content = document.getElementById('content');
   const links = document.querySelectorAll('nav a');
@@ -22,15 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // ページのコンテンツを読み込む関数
   function loadPage(page) {
     switch (page) {
-      case 'home':
-        content.innerHTML = '<h2>Home Page</h2><p>This is the home page content.</p>';
-        break;
-      case 'about':
-        content.innerHTML = '<h2>About Page</h2><p>This is the about page content.</p>';
-        break;
-      case 'contact':
-        content.innerHTML = '<h2>Contact Page</h2><p>This is the contact page content.</p>';
-        break;
       case 'player':
         loadPlayerPage();
         break;
@@ -196,6 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 初期ページのロード
-  loadPage('home');
+  // 初期ページのロードを 'player' に設定
+  loadPage('player');
 });
