@@ -17,21 +17,54 @@
       position: fixed;        /* ヘッダーを固定 */
       top: 0;                 /* 画面の上部に配置 */
       width: 100%;            /* 幅を画面全体に */
-      background: #333;       /* 背景色を維持 */
-      color: white;           /* テキスト色を維持 */
-      padding: 10px;          /* パディングを維持 */
-      text-align: center;     /* テキストを中央揃え */
-      z-index: 1000;          /* 他の要素より前面に表示 */
+      background: linear-gradient(90deg, #6d1189, #4361c1); /* グラデーション背景 */
+      color: white;           /* テキスト色を白に */
+      padding: 15px 30px;     /* パディングを調整 */
       box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 影を追加 */
+      z-index: 1000;          /* 他の要素より前面に表示 */
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+    }
+    .logo::before {
+      content: "🎥"; /* ロゴの前にアイコンを追加 */
+      margin-right: 10px;
+      font-size: 28px;
+    }
+    nav {
+      display: flex;
+      align-items: center;
     }
     nav a {
       color: white;
-      margin: 0 20px;
+      margin-left: 25px;
       text-decoration: none;
-      font-weight: bold;
+      font-weight: 500;
+      position: relative;
+      transition: color 0.3s ease;
     }
     nav a:hover {
-      text-decoration: underline;
+      color: #e0e0e0;
+    }
+    /* 下線エフェクト */
+    nav a::after {
+      content: '';
+      position: absolute;
+      width: 0%;
+      height: 2px;
+      bottom: -5px;
+      left: 0;
+      background-color: white;
+      transition: width 0.3s ease;
+    }
+    nav a:hover::after {
+      width: 100%;
     }
     #content {
       flex: 1;
@@ -94,6 +127,7 @@
       color: #fff;
       cursor: pointer;
       font-size: 20px;
+      transition: color 0.3s ease;
     }
     #footerControls button:hover {
       color: #1db954;
@@ -126,11 +160,30 @@
       cursor: pointer;
       border-radius: 50%;
     }
+    /* レスポンシブデザイン */
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px 20px;
+      }
+      nav {
+        margin-top: 10px;
+        flex-wrap: wrap;
+      }
+      nav a {
+        margin-left: 0;
+        margin-right: 15px;
+        margin-bottom: 10px;
+      }
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>My Electron SPA</h1>
+    <div class="logo">
+      My Electron SPA
+    </div>
     <nav>
       <!-- Player ページへのリンク -->
       <a href="#" data-page="player">Player</a>
@@ -139,15 +192,9 @@
     </nav>
   </header>
 
-
-  
-
   <div id="content">
     <!-- コンテンツがここに読み込まれます -->
   </div>
-
-
-
 
   <!-- フッターを追加 -->
   <footer id="footer">
