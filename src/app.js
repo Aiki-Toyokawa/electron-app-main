@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // ページのコンテンツを読み込む関数
   function loadPage(page) {
     switch (page) {
-      case 'player':
-        loadPlayerPage();
+      case 'list':
+        loadListPage();
         break;
       case 'url':
         loadUrlPage(); // 新しいケースを追加
@@ -34,17 +34,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // playerページを動的に読み込む関数
-  function loadPlayerPage() {
-    fetch('pages/player.html')
+  // listページを動的に読み込む関数
+  function loadListPage() {
+    fetch('pages/list.html')
       .then(response => response.text())
       .then(html => {
         content.innerHTML = html;
-        initializePlayer();
+        initializeList();
       })
       .catch(error => {
-        content.innerHTML = '<h2>Error loading the Player page</h2>';
-        console.error('Error loading player page:', error);
+        content.innerHTML = '<h2>Error loading the List page</h2>';
+        console.error('Error loading List page:', error);
       });
   }
 
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // プレーヤー初期化
-  function initializePlayer() {
+  function initializeList() {
     const videoList = document.getElementById('videoList');
     videos = window.videoAPI.getVideoData();
 
@@ -238,6 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 初期ページのロードを 'player' に設定
-  loadPage('player');
+  // 初期ページのロードを 'list' に設定
+  loadPage('list');
 });
