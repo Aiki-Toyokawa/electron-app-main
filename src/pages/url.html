@@ -12,21 +12,41 @@
       align-items: center;
       height: 100%;
       box-sizing: border-box;
+      background-color: #f9f9f9; /* 背景色を統一 */
     }
     .url-form {
       display: flex;
       flex-direction: column;
-      width: 300px;
+      width: 80%; /* 幅を少し広げて余裕を持たせる */
+      max-width: 800px; /* 最大幅を設定 */
+      background: #fff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     .url-form label {
       margin-bottom: 8px;
       font-weight: bold;
+      color: #333;
     }
     .url-form input[type="text"] {
-      padding: 8px;
-      margin-bottom: 12px;
+      padding: 10px;
+      margin-bottom: 15px;
       border: 1px solid #ccc;
       border-radius: 4px;
+      font-size: 14px;
+    }
+    .url-form .radio-group {
+      display: flex;
+      flex-direction: column; /* 縦に並べる */
+      margin-bottom: 15px;
+    }
+    .url-form .radio-group div {
+      margin-bottom: 10px; /* ラジオボタン間のスペース */
+    }
+    .url-form .radio-group label {
+      margin-left: 5px;
+      font-weight: normal;
     }
     .url-form button {
       padding: 10px;
@@ -36,6 +56,7 @@
       border-radius: 4px;
       cursor: pointer;
       font-size: 16px;
+      transition: background-color 0.3s ease;
     }
     .url-form button:hover {
       background-color: #17a44b;
@@ -51,23 +72,79 @@
 <body>
   <div class="container">
     <form class="url-form" id="urlForm">
-      <label for="urlInput">URLを入力してください:</label>
-      <input type="text" id="urlInput" name="url" placeholder="https://example.com" required>
+      <!-- ラジオボタンの追加 -->
+      <div class="radio-group">
+        <div>
+          <input type="radio" id="radio1" name="inputType" value="url" checked>
+          <label for="radio1">radio1</label>
+        </div>
+        <div>
+          <input type="radio" id="radio2" name="inputType" value="directory">
+          <label for="radio2">radio2</label>
+        </div>
+      </div>
+      
+      <!-- ローカルディレクトリ入力欄 -->
+      <div id="dirInputGroup">
+        <label for="dirInput">出力先フォルダ:</label>
+        <input type="text" id="dirInput" name="directory" placeholder="C:\Users\Username\Documents" required>
+      </div>
+      
+      <!-- URL入力欄 -->
+      <div id="urlInputGroup">
+        <label for="urlInput">URLを入力してください:</label>
+        <input type="text" id="urlInput" name="url" placeholder="https://example.com" required>
+      </div>
+
       <button type="submit">送信</button>
       <div class="response" id="response"></div>
     </form>
   </div>
+  
   <script>
-    document.getElementById('urlForm').addEventListener('submit', function(event) {
-      event.preventDefault();
-      const url = document.getElementById('urlInput').value;
+    document.addEventListener('DOMContentLoaded', () => {
+      const radio1 = document.getElementById('radio1');
+      const radio2 = document.getElementById('radio2');
+      const urlInputGroup = document.getElementById('urlInputGroup');
+      const dirInputGroup = document.getElementById('dirInputGroup');
+      const urlForm = document.getElementById('urlForm');
       const responseDiv = document.getElementById('response');
       
-      // ここでURLを処理するロジックを追加します。
-      // 例えば、入力されたURLを表示するだけの簡単な処理です。
-      responseDiv.textContent = `入力されたURL: ${url}`;
+      // フォームの送信イベント
+      urlForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (radio1.checked) {
+          const urlInput = document.getElementById('urlInput').value.trim();
+          if (validateUrl(urlInput)) {
+            responseDiv.textContent = `入力されたURL: ${urlInput}`;
+            responseDiv.style.color = '#333';
+            // 必要に応じてURLに基づく処理をここに実装
+          } else {
+            responseDiv.textContent = '有効なURLを入力してください。';
+            responseDiv.style.color = 'red';
+          }
+        } else if (radio2.checked) {
+          const dirInput = document.getElementById('dirInput').value.trim();
+          if (dirInput) {
+            responseDiv.textContent = `入力されたディレクトリパス: ${dirInput}`;
+            responseDiv.style.color = '#333';
+            // 必要に応じてディレクトリパスに基づく処理をここに実装
+          } else {
+            responseDiv.textContent = 'ディレクトリパスを入力してください。';
+            responseDiv.style.color = 'red';
+          }
+        }
+      });
       
-      // 実際のアプリケーションでは、URLを利用した機能をここに実装してください。
+      // URLの簡易バリデーション関数
+      function validateUrl(string) {
+        try {
+          new URL(string);
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
     });
   </script>
 </body>
