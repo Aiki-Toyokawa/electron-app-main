@@ -25,8 +25,11 @@ document.addEventListener('DOMContentLoaded', () => {
       case 'player':
         loadPlayerPage();
         break;
+      case 'url':
+        loadUrlPage(); // 新しいケースを追加
+        break;
       default:
-        content.innerHTML = '<h2>404</h2><p>Page not found.</p>';
+        content.innerHTML = '<h2>404</h2><p>ページが見つかりません。</p>';
         break;
     }
   }
@@ -42,6 +45,20 @@ document.addEventListener('DOMContentLoaded', () => {
       .catch(error => {
         content.innerHTML = '<h2>Error loading the Player page</h2>';
         console.error('Error loading player page:', error);
+      });
+  }
+
+  // URL入力フォームページを動的に読み込む関数
+  function loadUrlPage() {
+    fetch('pages/url.html')
+      .then(response => response.text())
+      .then(html => {
+        content.innerHTML = html;
+        initializeUrlForm(); // フォームの初期化関数を呼び出す
+      })
+      .catch(error => {
+        content.innerHTML = '<h2>Error loading the URL input page</h2>';
+        console.error('Error loading URL input page:', error);
       });
   }
 
@@ -187,6 +204,39 @@ document.addEventListener('DOMContentLoaded', () => {
       loadPage(page);
     });
   });
+
+  // URL入力フォームページの初期化関数
+  function initializeUrlForm() {
+    const urlForm = document.getElementById('urlForm');
+    const responseDiv = document.getElementById('response');
+
+    if (urlForm) {
+      urlForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const urlInput = document.getElementById('urlInput').value.trim();
+
+        if (validateUrl(urlInput)) {
+          // URLが有効な場合の処理
+          responseDiv.textContent = `入力されたURL: ${urlInput}`;
+          // 必要に応じて追加の処理をここに実装
+        } else {
+          // URLが無効な場合の処理
+          responseDiv.textContent = '有効なURLを入力してください。';
+          responseDiv.style.color = 'red';
+        }
+      });
+    }
+  }
+
+  // URLの簡易バリデーション関数
+  function validateUrl(string) {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 
   // 初期ページのロードを 'player' に設定
   loadPage('player');

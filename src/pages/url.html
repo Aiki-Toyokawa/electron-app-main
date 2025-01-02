@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>URL入力フォーム</title>
+  <link rel="stylesheet" href="../styles/global.css">
+  <style>
+    .container {
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      box-sizing: border-box;
+    }
+    .url-form {
+      display: flex;
+      flex-direction: column;
+      width: 300px;
+    }
+    .url-form label {
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    .url-form input[type="text"] {
+      padding: 8px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .url-form button {
+      padding: 10px;
+      background-color: #1db954;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .url-form button:hover {
+      background-color: #17a44b;
+    }
+    .response {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #333;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <form class="url-form" id="urlForm">
+      <label for="urlInput">URLを入力してください:</label>
+      <input type="text" id="urlInput" name="url" placeholder="https://example.com" required>
+      <button type="submit">送信</button>
+      <div class="response" id="response"></div>
+    </form>
+  </div>
+  <script>
+    document.getElementById('urlForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const url = document.getElementById('urlInput').value;
+      const responseDiv = document.getElementById('response');
+      
+      // ここでURLを処理するロジックを追加します。
+      // 例えば、入力されたURLを表示するだけの簡単な処理です。
+      responseDiv.textContent = `入力されたURL: ${url}`;
+      
+      // 実際のアプリケーションでは、URLを利用した機能をここに実装してください。
+    });
+  </script>
+</body>
+</html>
