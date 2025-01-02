@@ -1,11 +1,23 @@
+## やること□
+- 
+
+
+
+## やったこと☑ (消化が新しい順, 積層式)
+- video-itemにカーソル合わせたときに背景をグレイ化
+- video-itemの動画タイトルが長いのを...で省略する
+
+
+
 ## 現在のフォルダ構成
 - node_modules
 - src
   - dl (動画フォルダ)
     - 各動画フォルダ (フォルダ名は動画ID)
       - info.json
-      - music.mp4
+      - media.mp4
       - thumbnail.png
+      - each_media_title.title
   - api
     - videoAPI.js
   - assets (アイコンや画像)

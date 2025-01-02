@@ -18,21 +18,25 @@
       width: 200px;
       cursor: pointer;
       text-align: center;
-      padding: 10px; /* 追加: 内側の余白を追加 */
-      border-radius: 10px; /* 追加: 角を丸くする */
-      transition: background-color 0.3s ease; /* 追加: 背景色の変化をスムーズに */
+      padding: 10px; /* 内側の余白を追加 */
+      border-radius: 10px; /* 角を丸くする */
+      transition: background-color 0.3s ease; /* 背景色の変化をスムーズに */
     }
     .video-item:hover {
-      background-color: #bbbbbb; /* グレイの背景色 */
+      background-color: #f0f0f0; /* グレイの背景色 */
     }
     .video-item img {
       user-select: none;
       border-radius: 10px;
       width: 100%;
     }
-    .video-info {
+    .video-title { /* タイトル用のクラス */
       font-size: 14px;
       color: #666;
+      white-space: nowrap; /* 一行表示 */
+      overflow: hidden; /* はみ出しを隠す */
+      text-overflow: ellipsis; /* はみ出した部分を「...」で表示 */
+      margin-top: 8px; /* タイトルとサムネイルの間にスペースを追加 */
     }
   </style>
 </head>

@@ -1,3 +1,4 @@
+// src/app.js
 document.addEventListener('DOMContentLoaded', () => {
   const content = document.getElementById('content');
   const links = document.querySelectorAll('nav a');
@@ -59,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const title = document.createElement('p');
       title.textContent = video.title;
+      title.classList.add('video-title'); // クラスを追加
 
       videoItem.appendChild(thumbnail);
       videoItem.appendChild(title);
