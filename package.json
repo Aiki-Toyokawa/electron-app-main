@@ -1,7 +1,7 @@
 {
   "name": "electron-spa",
   "version": "1.0.0",
-  "description": "",
+  "description": "simple Electron SPA Music Player App",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
@@ -13,5 +13,20 @@
   "devDependencies": {
     "electron": "^32.0.2",
     "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.example.electron-spa",
+    "productName": "ElectronSPA",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": "nsis"
+    }
   }
 }
