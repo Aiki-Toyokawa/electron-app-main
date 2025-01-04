@@ -31,7 +31,7 @@
       - info.json
       - media.mp4
       - thumbnail.png
-      - each_media_title.title
+      - each_media_title.title (各動画のタイトルがファイルの名前になる)
   - api
     - videoAPI.js
   - assets (アイコンや画像)

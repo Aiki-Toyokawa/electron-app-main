@@ -15,8 +15,8 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.example.electron-spa",
-    "productName": "ElectronSPA",
+    "appId": "",
+    "productName": "YAJU&U",
     "directories": {
       "output": "dist"
     },
@@ -25,7 +25,7 @@
       "package.json"
     ],
     "win": {
-      "icon": "assets/icon.ico",
+      "icon": "src/assets/icons/appIcon.png",
       "target": "nsis"
     }
   }
