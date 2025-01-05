@@ -12,17 +12,17 @@
       font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
-      height: 100vh; /* ビューポート全体の高さを使用 */
+      height: 100vh; /* 画面全体高さを使用 */
     }
     header {
       position: fixed;        /* ヘッダーを固定 */
-      top: 0;                 /* 画面の上部に配置 */
-      width: 100%;            /* 幅を画面全体に */
-      background: linear-gradient(90deg, #6d1189, #4361c1); /* グラデーション背景 */
-      color: white;           /* テキスト色を白に */
-      padding: 15px 30px;     /* パディングを調整 */
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 影を追加 */
-      z-index: 1000;          /* 他の要素より前面に表示 */
+      top: 0;
+      width: 100%;
+      background: linear-gradient(90deg, #6d1189, #4361c1);
+      color: white;
+      padding: 15px 30px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      z-index: 1000;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -53,7 +53,6 @@
     nav a:hover {
       color: #e0e0e0;
     }
-    /* 下線エフェクト */
     nav a::after {
       content: '';
       position: absolute;
@@ -69,11 +68,10 @@
     }
     #content {
       flex: 1;
-      padding: 80px 20px 80px 20px; /* 上部と下部に余白を追加（ヘッダーとフッターの高さに合わせて調整） */
-      overflow-y: auto; /* コンテンツが多い場合にスクロール可能に */
-      background-color: #f9f9f9; /* 背景色を淡いグレーに */
+      padding: 80px 20px 80px 20px; /* ヘッダーとフッターの高さ確保 */
+      overflow-y: auto;
+      background-color: #f9f9f9;
     }
-    /* フッターのスタイルを強化 */
     footer {
       background: #222;
       color: #fff;
@@ -81,18 +79,16 @@
       position: fixed;
       bottom: 0;
       width: 100%;
-      display: none; /* 初期状態では非表示 */
+      display: flex; /* 常に表示しておく */
       align-items: center;
       box-sizing: border-box;
-      z-index: 1000; /* ヘッダーと同様に前面に表示 */
+      z-index: 1000;
     }
-    /* フッター内のコンテンツを横並びに */
     #footerContent {
       display: flex;
       align-items: center;
       width: 100%;
     }
-    /* 動画情報のスタイル */
     #footerVideoInfo {
       display: flex;
       align-items: center;
@@ -104,17 +100,16 @@
       height: 50px;
       margin-right: 15px;
       border-radius: 5px;
-      object-fit: cover; /* アスペクト比を維持 */
+      object-fit: cover;
     }
     #footerTitle {
       font-size: 16px;
       font-weight: bold;
-      white-space: nowrap; /* 1行で表示 */
+      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 150px; /* 必要に応じて調整 */
+      max-width: 150px;
     }
-    /* コントロールボタンのスタイル */
     #footerControls {
       display: flex;
       align-items: center;
@@ -133,7 +128,6 @@
     #footerControls button:hover {
       color: #1db954;
     }
-    /* 再生バーと時間表示のスタイル */
     #footerProgressContainer {
       flex: 1;
       display: flex;
@@ -161,7 +155,6 @@
       cursor: pointer;
       border-radius: 50%;
     }
-    /* レスポンシブデザイン */
     @media (max-width: 768px) {
       header {
         flex-direction: column;
@@ -182,46 +175,38 @@
 </head>
 <body>
   <header>
-    <div class="logo">
-      My Electron SPA
-    </div>
+    <div class="logo">My Electron SPA</div>
     <nav>
-      <!-- List ページへのリンク -->
       <a href="#" data-page="list">動画一覧</a>
-      <!-- URL入力フォームへのリンクを追加 -->
       <a href="#" data-page="url">URL入力</a>
     </nav>
   </header>
 
   <div id="content">
-    <!-- コンテンツがここに読み込まれます -->
+    <!-- ここに各ページ(list, url, player)をfetchで読み込み表示する -->
   </div>
 
-  <!-- フッターを追加 -->
-  <footer id="footer">
+  <footer id="footer" style="display: none;">
     <div id="footerContent">
-      <!-- 動画情報を表示する要素 -->
+      <!-- 音楽用フッターのUI -->
       <div id="footerVideoInfo">
         <img id="footerThumbnail" src="" alt="Thumbnail">
-        <div id="footerTitle">Video Title</div>
+        <div id="footerTitle">BGM Title</div>
       </div>
-      <!-- コントロールボタン -->
       <div id="footerControls">
         <button id="prevButton">⏮</button>
         <button id="playPauseButton">⏵︎</button>
         <button id="nextButton">⏭</button>
       </div>
-      <!-- 再生バーと時間表示 -->
       <div id="footerProgressContainer">
         <span id="footerCurrentTime">0:00</span>
         <input type="range" id="footerProgressBar" value="0" min="0" max="100">
         <span id="footerDuration">0:00</span>
       </div>
     </div>
-    <!-- 音声プレーヤー（非表示） -->
     <audio id="footerAudio" src=""></audio>
   </footer>
-  
+
   <script src="app.js"></script>
 </body>
 </html>

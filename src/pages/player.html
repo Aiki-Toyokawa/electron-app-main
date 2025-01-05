@@ -3,61 +3,44 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>動画プレーヤー</title>
+  <title>動画プレイヤー</title>
   <link rel="stylesheet" href="../styles/global.css">
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
+    .player-container {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      height: 100vh;
-      background-color: #000; /* 背景を黒に */
-    }
-    .video-container {
-      width: 80%;
-      max-width: 800px;
-      position: relative;
+      justify-content: center;
+      padding: 20px;
+      height: 100%;
+      box-sizing: border-box;
     }
     video {
-      width: 100%;
-      height: auto;
+      background-color: #000;
+      max-width: 90%;
+      border: 2px solid #ccc;
       border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
-    /* レスポンシブデザイン */
-    @media (max-width: 768px) {
-      .video-container {
-        width: 95%;
-      }
+    .back-button {
+      margin-top: 20px;
+      padding: 8px 16px;
+      background-color: #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #333;
+      text-decoration: none;
+      border: none;
+    }
+    .back-button:hover {
+      background-color: #bbb;
     }
   </style>
 </head>
 <body>
-  <div class="video-container">
-    <video id="videoPlayer" controls>
-      <source id="videoSource" src="" type="video/mp4">
-      お使いのブラウザは動画タグをサポートしていません。
-    </video>
+  <div class="player-container">
+    <h2>動画プレイヤー</h2>
+    <div id="playerContainer"></div>
+    <button id="backToList" class="back-button">一覧に戻る</button>
   </div>
-
-  <script>
-    // クエリパラメータから動画のパスを取得
-    const urlParams = new URLSearchParams(window.location.search);
-    const videoSrc = urlParams.get('src');
-
-    if (videoSrc) {
-      const videoSource = document.getElementById('videoSource');
-      videoSource.src = videoSrc;
-      const videoPlayer = document.getElementById('videoPlayer');
-      videoPlayer.load();
-      videoPlayer.play();
-    } else {
-      // 動画ソースが指定されていない場合、リストページに戻る
-      window.location.href = 'list.html';
-    }
-  </script>
 </body>
 </html>

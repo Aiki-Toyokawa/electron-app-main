@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const content = document.getElementById('content');
   const links = document.querySelectorAll('nav a');
 
-  // フッターの要素を取得
+  // ===== フッターの要素を取得 =====
   const footer = document.getElementById('footer');
   const footerAudio = document.getElementById('footerAudio');
   const footerThumbnail = document.getElementById('footerThumbnail');
@@ -15,18 +15,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const footerCurrentTime = document.getElementById('footerCurrentTime');
   const footerDuration = document.getElementById('footerDuration');
 
+  // ===== グローバル変数 =====
   let currentVideoIndex = 0;
-  let videos = []; // グローバルに定義
+  let videos = [];    // src/dl から読み込む動画一覧
   let isPlaying = false;
+  let isSeeking = false; // シークバー操作中フラグ
 
-  // ページのコンテンツを読み込む関数
+  // =========================================
+  // ページ切り替え用の関数
+  // =========================================
   function loadPage(page) {
     switch (page) {
       case 'list':
         loadListPage();
         break;
       case 'url':
-        loadUrlPage(); // 新しいケースを追加
+        loadUrlPage();
+        break;
+      case 'player':
+        loadPlayerPage();
         break;
       default:
         content.innerHTML = '<h2>404</h2><p>ページが見つかりません。</p>';
@@ -34,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // listページを動的に読み込む関数
+  // ----- listページを動的に読み込む関数 -----
   function loadListPage() {
     fetch('pages/list.html')
       .then(response => response.text())
@@ -48,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
-  // URL入力フォームページを動的に読み込む関数
+  // ----- URL入力フォームページを動的に読み込む関数 -----
   function loadUrlPage() {
     fetch('pages/url.html')
       .then(response => response.text())
@@ -62,11 +69,28 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
-  // プレーヤー初期化
+  // ----- playerページを動的に読み込む関数 -----
+  function loadPlayerPage() {
+    fetch('pages/player.html')
+      .then(response => response.text())
+      .then(html => {
+        content.innerHTML = html;
+        initializePlayer();
+      })
+      .catch(error => {
+        content.innerHTML = '<h2>Error loading the Player page</h2>';
+        console.error('Error loading Player page:', error);
+      });
+  }
+
+  // =========================================
+  // listページの初期化
+  // =========================================
   function initializeList() {
     const videoList = document.getElementById('videoList');
-    videos = window.videoAPI.getVideoData();
+    videos = window.videoAPI.getVideoData(); // preload.js経由で取得
 
+    // それぞれの動画を表示する
     videos.forEach((video, index) => {
       const videoItem = document.createElement('div');
       videoItem.classList.add('video-item');
@@ -77,42 +101,89 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const title = document.createElement('p');
       title.textContent = video.title;
-      title.classList.add('video-title'); // クラスを追加
+      title.classList.add('video-title');
 
       videoItem.appendChild(thumbnail);
       videoItem.appendChild(title);
 
+      // ======= クリック時の挙動 =======
       videoItem.addEventListener('click', () => {
-        currentVideoIndex = index;
-        loadVideo(video);
+        // 「player.htmlで動画を再生したい」ので、フッターはBGMとして継続再生する想定
+        // もしフッターで動画を再生したい場合は loadVideo(video) を使うが、ここでは使わない
+
+        // どの動画を再生するかをグローバル or sessionStorage等に保存
+        window.selectedVideo = video; 
+        // playerページをロード
+        loadPage('player');
       });
 
       videoList.appendChild(videoItem);
     });
   }
 
-  // フッターに動画をロードする関数
+  // =========================================
+  // playerページの初期化
+  // =========================================
+  function initializePlayer() {
+    // player.html にある要素を取得
+    const container = document.getElementById('playerContainer');
+    const backToListBtn = document.getElementById('backToList');
+
+    if (!container || !backToListBtn) {
+      console.warn('playerContainer / backToList が見つかりません');
+      return;
+    }
+
+    // グローバル変数から「再生したい動画情報」を受け取る
+    const video = window.selectedVideo;
+    if (!video) {
+      // もし video 情報がなければリストページに戻す
+      loadPage('list');
+      return;
+    }
+
+    // ----- <video> タグを作って表示 -----
+    const videoElem = document.createElement('video');
+    videoElem.src = video.src;
+    videoElem.controls = true;
+    videoElem.autoplay = true;
+    videoElem.style.width = '80%';
+
+    container.appendChild(videoElem);
+
+    // ======= 戻るボタンの動作 =======
+    backToListBtn.addEventListener('click', () => {
+      loadPage('list');
+    });
+  }
+
+  // =========================================
+  // フッターに動画(or音源)をロードする関数
+  // ※「フッターで動画を再生する場合」に利用
+  // =========================================
   function loadVideo(video) {
     footerAudio.src = video.src;
     footerAudio.load();
 
-    // フッターを表示
+    // フッターを表示（CSSの display:none などを解除）
     footer.style.display = 'flex';
 
-    // 動画情報を表示
+    // 動画情報を表示（サムネ＆タイトル）
     footerThumbnail.src = video.thumbnail;
     footerTitle.textContent = video.title;
 
-    // 再生を開始
+    // 再生開始
     footerAudio.play();
     isPlaying = true;
     updatePlayPauseButton();
 
-    // 再生時間バーの更新開始
+    // 再生時間バーを更新開始
     updateProgressBar();
   }
 
-  // 再生・一時停止ボタンのイベントリスナー
+  // =========================================
+  // フッターの操作（再生/停止, シークバー等）
+  // =========================================
   playPauseButton.addEventListener('click', () => {
     if (isPlaying) {
       footerAudio.pause();
@@ -121,7 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // オーディオの再生状態を監視
   footerAudio.addEventListener('play', () => {
     isPlaying = true;
     updatePlayPauseButton();
@@ -137,31 +207,29 @@ document.addEventListener('DOMContentLoaded', () => {
     playPauseButton.textContent = isPlaying ? '⏸' : '⏵︎';
   }
 
-  // 再生時間バーの更新を滑らかにする
+  // ----- 再生時間バーを滑らかに更新する -----
   function updateProgressBar() {
     if (footerAudio.duration) {
       const progressPercent = (footerAudio.currentTime / footerAudio.duration) * 100;
       footerProgressBar.value = progressPercent;
 
-      // 再生時間を表示
       footerCurrentTime.textContent = formatTime(footerAudio.currentTime);
       footerDuration.textContent = formatTime(footerAudio.duration);
     }
+    // 再生中であれば、リクエストアニメーションフレームで連続更新
     if (isPlaying) {
       requestAnimationFrame(updateProgressBar);
     }
   }
 
-  // 時間を mm:ss 形式にフォーマットする関数
+  // ----- 時間を mm:ss 形式にフォーマット -----
   function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
   }
 
-  // 再生バーの操作
-  let isSeeking = false;
-
+  // ----- シークバー操作 -----
   footerProgressBar.addEventListener('input', () => {
     if (footerAudio.duration) {
       const newTime = (footerProgressBar.value / 100) * footerAudio.duration;
@@ -180,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 前の動画を再生
+  // ----- 前の動画を再生 -----
   prevButton.addEventListener('click', () => {
     if (currentVideoIndex > 0) {
       currentVideoIndex--;
@@ -188,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 次の動画を再生
+  // ----- 次の動画を再生 -----
   nextButton.addEventListener('click', () => {
     if (currentVideoIndex < videos.length - 1) {
       currentVideoIndex++;
@@ -196,16 +264,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ナビゲーションリンクのクリックイベント
-  links.forEach(link => {
-    link.addEventListener('click', (event) => {
-      event.preventDefault();
-      const page = event.target.getAttribute('data-page');
-      loadPage(page);
-    });
-  });
-
+  // =========================================
   // URL入力フォームページの初期化関数
+  // =========================================
   function initializeUrlForm() {
     const urlForm = document.getElementById('urlForm');
     const responseDiv = document.getElementById('response');
@@ -216,11 +277,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const urlInput = document.getElementById('urlInput').value.trim();
 
         if (validateUrl(urlInput)) {
-          // URLが有効な場合の処理
           responseDiv.textContent = `入力されたURL: ${urlInput}`;
-          // 必要に応じて追加の処理をここに実装
+          responseDiv.style.color = '#333';
         } else {
-          // URLが無効な場合の処理
           responseDiv.textContent = '有効なURLを入力してください。';
           responseDiv.style.color = 'red';
         }
@@ -228,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // URLの簡易バリデーション関数
+  // ----- URLの簡易バリデーション -----
   function validateUrl(string) {
     try {
       new URL(string);
@@ -238,6 +297,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 初期ページのロードを 'list' に設定
+  // =========================================
+  // ナビゲーションのクリックイベント
+  // =========================================
+  links.forEach(link => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      const page = event.target.getAttribute('data-page');
+      loadPage(page);
+    });
+  });
+
+  // アプリ起動時、最初に読み込むページ
   loadPage('list');
 });

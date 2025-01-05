@@ -1,5 +1,6 @@
+<!-- src/pages/list.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
   <title>Video List</title>
@@ -18,33 +19,32 @@
       width: 200px;
       cursor: pointer;
       text-align: center;
-      padding: 8px; /* 内側の余白を追加 */
-      border-radius: 10px; /* 角を丸くする */
-      transition: background-color 0.3s ease; /* 背景色の変化をスムーズに */
+      padding: 8px;
+      border-radius: 10px;
+      transition: background-color 0.3s ease;
     }
     .video-item:hover {
-      background-color: #c7c7c7; /* グレイの背景色 */
+      background-color: #c7c7c7;
     }
     .video-item img {
       user-select: none;
       border-radius: 10px;
       width: 100%;
     }
-    .video-title { /* タイトル用のクラス */
+    .video-title {
       font-size: 14px;
       color: #666;
-      white-space: nowrap; /* 一行表示 */
-      overflow: hidden; /* はみ出しを隠す */
-      text-overflow: ellipsis; /* はみ出した部分を「...」で表示 */
-      margin-top: 8px; /* タイトルとサムネイルの間にスペースを追加 */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 8px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div id="videoList" class="video-list">
-      <!-- src/dlに動画はあるのでサンプル挿入はいらない -->
-    </div>
+    <h2>動画一覧</h2>
+    <div id="videoList" class="video-list"></div>
   </div>
 </body>
 </html>

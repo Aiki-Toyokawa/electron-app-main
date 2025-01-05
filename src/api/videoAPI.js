@@ -15,9 +15,9 @@ function getVideoData() {
       const info = JSON.parse(infoData);
 
       return {
-        id: info.videoId,
+        id: info.raw_data.videoId,
         title: info.raw_data.title,
-        author: info.author,
+        author: info.raw_data.author,
         time: info.timeDisplay,
         videoQuality: info.videoQuality,
         audioQuality: info.audioQuality,
