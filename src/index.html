@@ -7,169 +7,70 @@
   <link rel="stylesheet" href="./styles/global.css">
   <style>
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      height: 100vh; /* 画面全体高さを使用 */
+      display: flex; flex-direction: column; height: 100vh;
     }
     header {
-      position: fixed;        /* ヘッダーを固定 */
-      top: 0;
-      width: 100%;
+      position: fixed; top: 0; width: 100%;
       background: linear-gradient(90deg, #6d1189, #4361c1);
-      color: white;
-      padding: 15px 30px;
+      color: white; padding: 15px 30px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
     }
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-    }
-    .logo::before {
-      content: "🙂‍↕️"; /* ロゴの前にアイコンを追加 */
-      margin-right: 10px;
-      font-size: 28px;
-    }
-    nav {
-      display: flex;
-      align-items: center;
-    }
+    .logo { font-size: 24px; font-weight: bold; }
     nav a {
-      color: white;
-      margin-left: 25px;
-      text-decoration: none;
-      font-weight: 500;
-      position: relative;
-      transition: color 0.3s ease;
-    }
-    nav a:hover {
-      color: #e0e0e0;
-    }
-    nav a::after {
-      content: '';
-      position: absolute;
-      width: 0%;
-      height: 2px;
-      bottom: -5px;
-      left: 0;
-      background-color: white;
-      transition: width 0.3s ease;
-    }
-    nav a:hover::after {
-      width: 100%;
+      color: white; margin-left: 25px; text-decoration: none; font-weight: 500;
     }
     #content {
       flex: 1;
-      padding: 80px 20px 80px 20px; /* ヘッダーとフッターの高さ確保 */
+      padding: 80px 20px 80px 20px; /* ヘッダーとフッターの高さを確保 */
       overflow-y: auto;
       background-color: #f9f9f9;
     }
     footer {
-      background: #222;
-      color: #fff;
-      padding: 10px 20px;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      display: flex; /* 常に表示しておく */
+      position: fixed; bottom: 0; width: 100%;
+      background: #222; color: #fff; padding: 10px 20px;
+      box-sizing: border-box; z-index: 1000;
+      display: none; /* ← 最初は非表示 */
       align-items: center;
-      box-sizing: border-box;
-      z-index: 1000;
     }
+    /* フッター内要素のレイアウト */
     #footerContent {
-      display: flex;
-      align-items: center;
-      width: 100%;
+      display: flex; align-items: center; width: 100%;
     }
     #footerVideoInfo {
-      display: flex;
-      align-items: center;
-      margin-right: 20px;
-      flex-shrink: 0;
+      display: flex; align-items: center; margin-right: 20px;
     }
     #footerThumbnail {
-      width: 50px;
-      height: 50px;
-      margin-right: 15px;
-      border-radius: 5px;
-      object-fit: cover;
+      width: 50px; height: 50px; margin-right: 15px; border-radius: 5px; object-fit: cover;
     }
     #footerTitle {
-      font-size: 16px;
-      font-weight: bold;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 150px;
+      font-size: 16px; font-weight: bold;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;
     }
     #footerControls {
-      display: flex;
-      align-items: center;
-      margin-right: 20px;
-      flex-shrink: 0;
+      display: flex; align-items: center; margin-right: 20px;
     }
     #footerControls button {
-      margin: 0 5px;
-      background: none;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-      font-size: 20px;
-      transition: color 0.3s ease;
-    }
-    #footerControls button:hover {
-      color: #1db954;
+      margin: 0 5px; background: none; border: none; color: #fff;
+      cursor: pointer; font-size: 20px;
     }
     #footerProgressContainer {
-      flex: 1;
-      display: flex;
-      align-items: center;
+      flex: 1; display: flex; align-items: center;
+    }
+    #footerProgressBar {
+      flex: 1; appearance: none; height: 5px; background: #444; border-radius: 5px;
+      margin: 0 10px;
     }
     #footerCurrentTime, #footerDuration {
       font-size: 12px;
-      margin: 0 10px;
-      flex-shrink: 0;
     }
-    #footerProgressBar {
-      flex: 1;
-      appearance: none;
-      height: 5px;
-      background: #444;
-      outline: none;
-      border-radius: 5px;
-      overflow: hidden;
-    }
-    #footerProgressBar::-webkit-slider-thumb {
-      appearance: none;
-      width: 10px;
-      height: 10px;
-      background: #fff;
-      cursor: pointer;
-      border-radius: 50%;
-    }
-    @media (max-width: 768px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 15px 20px;
-      }
-      nav {
-        margin-top: 10px;
-        flex-wrap: wrap;
-      }
-      nav a {
-        margin-left: 0;
-        margin-right: 15px;
-        margin-bottom: 10px;
-      }
+
+    /* 動画を1つだけ配置し、最初は非表示（操作もしない） */
+    #sharedVideo {
+      display: none; /* フッター内で隠しておく */
     }
   </style>
 </head>
@@ -182,16 +83,14 @@
     </nav>
   </header>
 
-  <div id="content">
-    <!-- ここに各ページ(list, url, player)をfetchで読み込み表示する -->
-  </div>
+  <div id="content"><!-- ページの中身は app.js が切り替える --></div>
 
-  <footer id="footer" style="display: none;">
+  <!-- フッター。最初は非表示。中に「共有動画」の実体 #sharedVideo を仕込む。 -->
+  <footer id="footer">
     <div id="footerContent">
-      <!-- 音楽用フッターのUI -->
       <div id="footerVideoInfo">
         <img id="footerThumbnail" src="" alt="Thumbnail">
-        <div id="footerTitle">BGM Title</div>
+        <div id="footerTitle"></div>
       </div>
       <div id="footerControls">
         <button id="prevButton">⏮</button>
@@ -204,7 +103,10 @@
         <span id="footerDuration">0:00</span>
       </div>
     </div>
-    <audio id="footerAudio" src=""></audio>
+
+    <!-- 共有するメディア要素 (audio/video) -->
+    <!-- 今回は <video> にしておけば、どのページでも「同じ再生状態」を扱える -->
+    <video id="sharedVideo"></video>
   </footer>
 
   <script src="app.js"></script>
