@@ -2,35 +2,39 @@ document.addEventListener('DOMContentLoaded', () => {
   const content = document.getElementById('content');
   const navLinks = document.querySelectorAll('nav a');
 
-  // フッターDOM
+  // フッター要素
   const footer = document.getElementById('footer');
-  // 共有動画要素
-  const footerVideo = document.getElementById('sharedVideo');
   const footerThumbnail = document.getElementById('footerThumbnail');
   const footerTitle = document.getElementById('footerTitle');
-  const prevButton = document.getElementById('prevButton');
-  const playPauseButton = document.getElementById('playPauseButton');
-  const nextButton = document.getElementById('nextButton');
-  const footerProgressBar = document.getElementById('footerProgressBar');
-  const footerCurrentTime = document.getElementById('footerCurrentTime');
-  const footerDuration = document.getElementById('footerDuration');
+  const prevBtn = document.getElementById('prevBtn');
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const timeDisplay = document.getElementById('timeDisplay');
+  const seekBar = document.getElementById('seekBar');
+  const volumeSlider = document.getElementById('volumeSlider');
 
-  let videos = [];           // videoAPIから取得するローカル動画リスト
-  let currentIndex = -1;     // 現在再生中の動画Index(未選択時は -1)
-  let inPlayerPage = false;  // プレイヤー画面中か否か
-  let isSeeking = false;     // シークバー操作中フラグ
+  // 隠しコンテナ (playerページ外で <video> を格納しておく)
+  const hiddenHolder = document.getElementById('hiddenHolder');
+
+  // アプリ全体で1つだけの<video>
+  let sharedVideo = null;
+
+  // 動画リストや状態
+  let videos = [];
+  let currentIndex = -1; // 未選択なら -1
+  let isSeeking = false; // シーク操作中
 
   // ==========================
-  // ページ切り替え
+  // SPAページ切り替え
   // ==========================
   function loadPage(page) {
-    switch (page) {
+    switch(page) {
       case 'list':
-        inPlayerPage = false;
-        // フッターを小さいモードに（動画再生中なら表示）
-        exitFullScreenMode();
-        showFooterIfVideoLoaded();
-
+        // playerから戻るとき、videoを隠しコンテナに戻す (映像非表示, 音は継続)
+        if (sharedVideo && hiddenHolder) {
+          hiddenHolder.appendChild(sharedVideo); // DOM再マウントだが同じ要素
+          sharedVideo.style.display = 'none';    // 映像は非表示
+        }
         fetch('pages/list.html')
           .then(res => res.text())
           .then(html => {
@@ -44,10 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
 
       case 'url':
-        inPlayerPage = false;
-        exitFullScreenMode();
-        showFooterIfVideoLoaded();
-
+        // 同様に player以外では隠しコンテナへ
+        if (sharedVideo && hiddenHolder) {
+          hiddenHolder.appendChild(sharedVideo);
+          sharedVideo.style.display = 'none';
+        }
         fetch('pages/url.html')
           .then(res => res.text())
           .then(html => {
@@ -61,15 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
 
       case 'player':
-        inPlayerPage = true;
-        // 動画が選択されていなければフルスクリーンにしない(音だけ再生されてしまうので)
-        if (currentIndex >= 0) {
-          enterFullScreenMode();
-        } else {
-          // 動画が無い場合はフッターを隠すだけ
-          hideFooter();
-        }
-
+        // playerページへ行く場合、映像を表示したい
         fetch('pages/player.html')
           .then(res => res.text())
           .then(html => {
@@ -92,39 +89,37 @@ document.addEventListener('DOMContentLoaded', () => {
   // listページ初期化
   // ==========================
   function initListPage() {
-    const videoListElement = document.getElementById('videoList');
-    if (!videoListElement) return;
+    const videoListEl = document.getElementById('videoList');
+    if (!videoListEl) return;
 
-    // preload.js -> videoAPI.getVideoData() で取得
+    // preload.js経由で動画一覧取得
     if (window.videoAPI && typeof window.videoAPI.getVideoData === 'function') {
       videos = window.videoAPI.getVideoData();
     } else {
       videos = [];
     }
 
-    videos.forEach((video, idx) => {
+    videos.forEach((vid, idx) => {
       const item = document.createElement('div');
       item.classList.add('video-item');
 
       const thumb = document.createElement('img');
-      thumb.src = video.thumbnail || '';
-      thumb.alt = video.title || '';
+      thumb.src = vid.thumbnail || '';
+      thumb.alt = vid.title || '';
 
       const title = document.createElement('p');
-      title.textContent = video.title || 'No Title';
       title.classList.add('video-title');
+      title.textContent = vid.title || '(No Title)';
 
       item.appendChild(thumb);
       item.appendChild(title);
 
-      // クリックしたら動画を再生し、playerページへ
       item.addEventListener('click', () => {
-        currentIndex = idx;
-        loadVideoInFooter(videos[currentIndex]);
+        // 再生開始 & playerページへ
+        playVideo(idx);
         loadPage('player');
       });
-
-      videoListElement.appendChild(item);
+      videoListEl.appendChild(item);
     });
   }
 
@@ -132,12 +127,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // playerページ初期化
   // ==========================
   function initPlayerPage() {
+    const playerContainer = document.getElementById('playerContainer');
     const backBtn = document.getElementById('backToList');
-    if (backBtn) {
-      backBtn.addEventListener('click', () => {
-        loadPage('list');
-      });
+    if (!playerContainer || !backBtn) return;
+
+    // playerページへ来た時に、映像を表示状態にする
+    // (まだcurrentIndexが-1なら動画選択なしで映像出さない)
+    if (sharedVideo && currentIndex >= 0) {
+      playerContainer.appendChild(sharedVideo);
+      sharedVideo.style.display = 'block';  // 映像を表示
     }
+
+    backBtn.addEventListener('click', () => {
+      loadPage('list');
+    });
   }
 
   // ==========================
@@ -146,142 +149,133 @@ document.addEventListener('DOMContentLoaded', () => {
   function initUrlPage() {
     const urlForm = document.getElementById('urlForm');
     if (!urlForm) return;
-
-    const responseDiv = document.getElementById('response');
-    urlForm.addEventListener('submit', (e) => {
+    urlForm.addEventListener('submit', e => {
       e.preventDefault();
-      const urlInput = document.getElementById('urlInput').value.trim();
-      if (validateUrl(urlInput)) {
-        responseDiv.textContent = `入力されたURL: ${urlInput}`;
-        responseDiv.style.color = '#333';
-      } else {
-        responseDiv.textContent = '有効なURLを入力してください。';
-        responseDiv.style.color = 'red';
-      }
+      // ここでURL入力処理など
     });
   }
-  function validateUrl(str) {
-    try {
-      new URL(str);
-      return true;
-    } catch {
-      return false;
+
+  // ==========================
+  // 動画を再生 (同じ動画なら再ロードしない)
+  // ==========================
+  function playVideo(index) {
+    if (!videos[index]) return;
+    if (index === currentIndex) {
+      // 既に同じ動画を再生中なら何もしない (シームレス)
+      return;
     }
-  }
+    currentIndex = index;
+    const vid = videos[index];
 
-  // ==========================
-  // フッターに動画を読み込んで再生
-  // ==========================
-  function loadVideoInFooter(videoObj) {
-    if (!videoObj) return;
+    // sharedVideoが未生成なら作っておく
+    if (!sharedVideo) {
+      sharedVideo = document.createElement('video');
+      sharedVideo.id = 'sharedVideo';
+      sharedVideo.preload = 'auto';
+      sharedVideo.playsInline = true;
+      sharedVideo.controls = false; // フッターで操作する
+      sharedVideo.style.display = 'none'; // 初期は非表示
+      hiddenHolder.appendChild(sharedVideo); // 最初は隠しホルダーに
+      initVideoEvents(); // イベント付与
+    }
 
-    // <video> に src を設定
-    footerVideo.src = videoObj.src;
-    footerVideo.load();
+    // srcが違うならセット
+    if (sharedVideo.src !== vid.src) {
+      sharedVideo.src = vid.src;
+      sharedVideo.load();
+    }
 
-    // サムネ、タイトル
-    footerThumbnail.src = videoObj.thumbnail || '';
-    footerTitle.textContent = videoObj.title || '';
+    // フッターにサムネ/タイトル
+    footerThumbnail.src = vid.thumbnail || '';
+    footerTitle.textContent = vid.title || '(No Title)';
 
-    // フッターを表示(小さいモード)
-    exitFullScreenMode();
+    // フッターを表示
     footer.style.display = 'flex';
 
-    // 再生開始
-    footerVideo.play().catch(err => console.warn('Video play error:', err));
+    // 再生開始 (エラーは握りつぶし)
+    sharedVideo.play().catch(err => console.warn('play error:', err));
   }
 
   // ==========================
-  // フルスクリーン関連
+  // <video> イベント & フッター操作初期化
   // ==========================
-  function enterFullScreenMode() {
-    footerVideo.classList.remove('footer-mode');
-    footerVideo.classList.add('fullscreen-mode');
-    // フッターUIは非表示 (サムネやボタンを隠す)
-    footer.style.display = 'none';
-  }
-  function exitFullScreenMode() {
-    footerVideo.classList.remove('fullscreen-mode');
-    footerVideo.classList.add('footer-mode');
-  }
+  function initVideoEvents() {
+    // 再生/一時停止
+    playPauseBtn.addEventListener('click', () => {
+      if (sharedVideo.paused) {
+        sharedVideo.play().catch(e => console.warn(e));
+      } else {
+        sharedVideo.pause();
+      }
+    });
 
-  // 動画が無い時はフッターを隠す
-  function showFooterIfVideoLoaded() {
-    if (currentIndex >= 0 && footerVideo.src) {
-      footer.style.display = 'flex';
-    } else {
-      hideFooter();
-    }
-  }
-  function hideFooter() {
-    footer.style.display = 'none';
-  }
+    sharedVideo.addEventListener('play', () => {
+      playPauseBtn.textContent = '⏸';
+      updateProgress();
+    });
+    sharedVideo.addEventListener('pause', () => {
+      playPauseBtn.textContent = '⏵︎';
+    });
 
-  // ==========================
-  // フッター操作（再生/停止、前後、シーク）
-  // ==========================
-  playPauseButton.addEventListener('click', () => {
-    if (footerVideo.paused) {
-      footerVideo.play().catch(err => console.warn(err));
-    } else {
-      footerVideo.pause();
-    }
-  });
-  footerVideo.addEventListener('play', () => {
-    playPauseButton.textContent = '⏸';
-    updateProgressBar();
-  });
-  footerVideo.addEventListener('pause', () => {
-    playPauseButton.textContent = '⏵︎';
-  });
+    // 次へ/前へ
+    nextBtn.addEventListener('click', () => {
+      if (currentIndex < videos.length - 1) {
+        playVideo(currentIndex + 1);
+      }
+    });
+    prevBtn.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        playVideo(currentIndex - 1);
+      }
+    });
 
-  prevButton.addEventListener('click', () => {
-    if (currentIndex > 0) {
-      currentIndex--;
-      loadVideoInFooter(videos[currentIndex]);
-    }
-  });
-  nextButton.addEventListener('click', () => {
-    if (currentIndex < videos.length - 1) {
-      currentIndex++;
-      loadVideoInFooter(videos[currentIndex]);
-    }
-  });
-
-  footerProgressBar.addEventListener('input', () => {
-    if (!isSeeking) {
+    // シークバー
+    seekBar.addEventListener('input', () => {
       isSeeking = true;
-      footerVideo.pause();
-    }
-    const newTime = (footerProgressBar.value / 100) * (footerVideo.duration || 0);
-    footerVideo.currentTime = newTime;
-  });
-  footerProgressBar.addEventListener('change', () => {
-    isSeeking = false;
-    footerVideo.play().catch(err => console.warn(err));
-  });
+      const newTime = (seekBar.value / 100) * (sharedVideo.duration || 0);
+      sharedVideo.currentTime = newTime;
+    });
+    seekBar.addEventListener('change', () => {
+      isSeeking = false;
+    });
 
-  function updateProgressBar() {
-    if (!footerVideo.paused && !footerVideo.ended) {
-      const pct = (footerVideo.currentTime / footerVideo.duration) * 100 || 0;
-      footerProgressBar.value = pct;
-      footerCurrentTime.textContent = formatTime(footerVideo.currentTime);
-      footerDuration.textContent = formatTime(footerVideo.duration);
-      requestAnimationFrame(updateProgressBar);
+    // 音量
+    volumeSlider.addEventListener('input', () => {
+      sharedVideo.volume = volumeSlider.value;
+    });
+  }
+
+  // ==========================
+  // プログレスバー更新
+  // ==========================
+  function updateProgress() {
+    if (!sharedVideo.paused && !sharedVideo.ended) {
+      const pct = (sharedVideo.currentTime / sharedVideo.duration) * 100 || 0;
+      if (!isSeeking) {
+        seekBar.value = pct;
+      }
+      timeDisplay.textContent = formatTime(sharedVideo.currentTime);
+      requestAnimationFrame(updateProgress);
+    } else {
+      // 一時停止 or 再生終了
+      if (!isSeeking) {
+        const pct = (sharedVideo.currentTime / (sharedVideo.duration || 1)) * 100;
+        seekBar.value = pct;
+      }
     }
   }
-  function formatTime(seconds) {
-    if (!seconds || isNaN(seconds)) return '0:00';
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
+  function formatTime(sec) {
+    if (!sec || isNaN(sec)) return '0:00';
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   }
 
   // ==========================
-  // ヘッダーのリンクでページ切り替え
+  // ヘッダーのリンク
   // ==========================
   navLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
+    link.addEventListener('click', e => {
       e.preventDefault();
       const page = link.getAttribute('data-page');
       loadPage(page);
