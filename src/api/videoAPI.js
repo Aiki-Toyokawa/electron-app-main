@@ -21,8 +21,8 @@ function getVideoData() {
         time: info.timeDisplay,
         videoQuality: info.videoQuality,
         audioQuality: info.audioQuality,
-        src: `file://${path.join(__dirname, '..', 'dl', folder, 'media.mp4').replace(/\\/g, '/')}`,  // file://を追加
-        thumbnail: `file://${path.join(__dirname, '..', 'dl', folder, 'thumbnail.png').replace(/\\/g, '/')}`,  // file://を追加
+        src: `file://${path.join(__dirname, '..', 'dl', folder, 'media.mp4').replace(/\\/g, '/')}`,   // ここが動画パス
+        thumbnail: `file://${path.join(__dirname, '..', 'dl', folder, 'thumbnail.png').replace(/\\/g, '/')}`, // サムネパス
       };
     }
     return null;
