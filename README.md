@@ -20,7 +20,7 @@
 
 
 ## 心構え
-- UIでmarginを入れるときは常にmargin-topのみ、下にmarginを入れない(margin同士が競合して対消滅するから)
+- UIでmarginを入れるときは常にmargin-topのみ、下にmarginを入れない(上下のmargin同士が競合して対消滅するから)
 
 
 ## 現在のフォルダ構成
