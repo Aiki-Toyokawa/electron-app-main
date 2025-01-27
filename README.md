@@ -24,6 +24,7 @@
 
 
 ## 現在のフォルダ構成
+root directory
 - node_modules
 - src
   - dl (動画フォルダ)
