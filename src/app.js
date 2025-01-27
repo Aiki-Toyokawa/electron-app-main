@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
           footer.style.display = 'none';
         }
 
-        // 読み込むページ(list or url)
+        // 対象ページを読み込む
         fetch(`pages/${page}.html`)
           .then(res => res.text())
           .then(html => {
@@ -84,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoListEl = document.getElementById('videoList');
     if (!videoListEl) return;
 
+    // preload.js経由で動画一覧取得
     if (window.videoAPI && typeof window.videoAPI.getVideoData === 'function') {
       videos = window.videoAPI.getVideoData();
     } else {
@@ -105,8 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
       item.appendChild(thumb);
       item.appendChild(title);
 
+      // 動画クリック
       item.addEventListener('click', () => {
-        // 再生開始 & playerページへ
         playVideo(idx);
         loadPage('player');
       });
@@ -134,15 +135,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const backBtn = document.getElementById('backToList');
     if (!playerContainer || !backBtn) return;
 
-    // playerページに来たらフッター非表示 (もう済みだけど念のため)
-    footer.style.display = 'none';
-
-    // 映像を表示 (videoをplayerContainerへappend)
+    // playerページに来たらフッターは非表示(上で設定済み)
+    // 映像を表示
     if (globalVideo && currentIndex >= 0) {
       playerContainer.appendChild(globalVideo);
       globalVideo.style.display = 'block';
-      // もしフッター操作だけだったら controls=false かもしれませんが
-      // 今回は「playerページで動画の操作をしたい」→ controls=true
+      // playerページで直接操作したいので controls=true
       globalVideo.controls = true;
     }
 
@@ -152,12 +150,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================
-  // 動画を再生 (同じ動画なら再ロードしない)
+  // 動画を再生
   // ==========================
   function playVideo(index) {
     if (!videos[index]) return;
     if (index === currentIndex) {
-      // 既に同じ動画を再生中なら何もしない
+      // 同じ動画なら再ロードしない(シームレス)
       return;
     }
     currentIndex = index;
@@ -169,13 +167,11 @@ document.addEventListener('DOMContentLoaded', () => {
       globalVideo.id = 'globalVideo';
       globalVideo.preload = 'auto';
       globalVideo.playsInline = true;
-      // フッターで操作するなら controls=false, しかしplayerページで操作するならここをtrueでもOK
-      // -> 今回は playerページに行く時に controls=true にしている
-      globalVideo.controls = false;
-
+      globalVideo.controls = false; // フッター操作 or playerページで切り替え
       globalVideo.style.display = 'none';
-      hiddenHolder.appendChild(globalVideo); 
-      initVideoEvents();
+      hiddenHolder.appendChild(globalVideo);
+
+      initVideoEvents(); 
     }
 
     // src切り替え
@@ -184,19 +180,22 @@ document.addEventListener('DOMContentLoaded', () => {
       globalVideo.load();
     }
 
-    // フッター用の情報
+    // フッターにサムネ/タイトルを反映
     footerThumbnail.src = vid.thumbnail || '';
     footerTitle.textContent = vid.title || '(No Title)';
+
+    // フッター表示
+    footer.style.display = 'flex';
 
     // 再生開始
     globalVideo.play().catch(err => console.warn(err));
   }
 
   // ==========================
-  // <video> イベント & フッター操作
+  // フッター操作 (videoイベント)
   // ==========================
   function initVideoEvents() {
-    // 再生/一時停止
+    // 再生 / 一時停止
     playPauseBtn.addEventListener('click', () => {
       if (globalVideo.paused) {
         globalVideo.play().catch(e => console.warn(e));
@@ -204,9 +203,11 @@ document.addEventListener('DOMContentLoaded', () => {
         globalVideo.pause();
       }
     });
+
+    // 動画の再生開始時 -> 毎フレームでプログレスバーを更新
     globalVideo.addEventListener('play', () => {
       playPauseBtn.textContent = '⏸';
-      updateProgress();
+      requestAnimationFrame(updateProgress); 
     });
     globalVideo.addEventListener('pause', () => {
       playPauseBtn.textContent = '⏵︎';
@@ -241,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================
-  // プログレスバー更新
+  // プログレスバーを requestAnimationFrame で更新
   // ==========================
   function updateProgress() {
     if (!globalVideo.paused && !globalVideo.ended) {
@@ -250,15 +251,18 @@ document.addEventListener('DOMContentLoaded', () => {
         seekBar.value = pct;
       }
       timeDisplay.textContent = formatTime(globalVideo.currentTime);
+
+      // 再生中は毎フレーム呼び出し
       requestAnimationFrame(updateProgress);
     } else {
-      // 一時停止 or 終了
+      // 一時停止 or 終了 
       if (!isSeeking) {
-        const pct = (globalVideo.currentTime / (globalVideo.duration || 1)) * 100;
+        const pct = (globalVideo.currentTime / (globalVideo.duration || 1)) * 100 || 0;
         seekBar.value = pct;
       }
     }
   }
+
   function formatTime(sec) {
     if (!sec || isNaN(sec)) return '0:00';
     const m = Math.floor(sec / 60);
@@ -270,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ヘッダーのリンク
   // ==========================
   navLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
+    link.addEventListener('click', e => {
       e.preventDefault();
       const page = link.getAttribute('data-page');
       loadPage(page);
