@@ -13,60 +13,52 @@ document.addEventListener('DOMContentLoaded', () => {
   const seekBar = document.getElementById('seekBar');
   const volumeSlider = document.getElementById('volumeSlider');
 
-  // 隠しコンテナ (playerページ外で <video> を格納しておく)
+  // プレイヤー以外の時に<video>を格納する隠しコンテナ
   const hiddenHolder = document.getElementById('hiddenHolder');
 
-  // アプリ全体で1つだけの<video>
-  let sharedVideo = null;
-
-  // 動画リストや状態
-  let videos = [];
-  let currentIndex = -1; // 未選択なら -1
-  let isSeeking = false; // シーク操作中
+  let globalVideo = null;        // アプリ全体で1つだけの<video>
+  let videos = [];               // 動画リスト
+  let currentIndex = -1;         // 再生中の動画 (未選択は-1)
+  let isSeeking = false;         // シーク操作中
 
   // ==========================
-  // SPAページ切り替え
+  // ページ切り替え
   // ==========================
   function loadPage(page) {
-    switch(page) {
+    switch (page) {
       case 'list':
-        // playerから戻るとき、videoを隠しコンテナに戻す (映像非表示, 音は継続)
-        if (sharedVideo && hiddenHolder) {
-          hiddenHolder.appendChild(sharedVideo); // DOM再マウントだが同じ要素
-          sharedVideo.style.display = 'none';    // 映像は非表示
-        }
-        fetch('pages/list.html')
-          .then(res => res.text())
-          .then(html => {
-            content.innerHTML = html;
-            initListPage();
-          })
-          .catch(err => {
-            console.error(err);
-            content.innerHTML = '<h2>Error loading list page</h2>';
-          });
-        break;
-
       case 'url':
-        // 同様に player以外では隠しコンテナへ
-        if (sharedVideo && hiddenHolder) {
-          hiddenHolder.appendChild(sharedVideo);
-          sharedVideo.style.display = 'none';
+        // playerページではなくなるので、フッターを表示する(もし再生中なら)
+        // かつ videoを hiddenHolder に戻して映像隠す
+        if (globalVideo && hiddenHolder) {
+          hiddenHolder.appendChild(globalVideo);
+          globalVideo.style.display = 'none';
         }
-        fetch('pages/url.html')
+        // 「再生中ならフッター表示」「何も再生していなければ非表示」
+        if (currentIndex >= 0) {
+          footer.style.display = 'flex';
+        } else {
+          footer.style.display = 'none';
+        }
+
+        // 読み込むページ(list or url)
+        fetch(`pages/${page}.html`)
           .then(res => res.text())
           .then(html => {
             content.innerHTML = html;
-            initUrlPage();
+            if (page === 'list') initListPage();
+            else if (page === 'url') initUrlPage();
           })
           .catch(err => {
             console.error(err);
-            content.innerHTML = '<h2>Error loading url page</h2>';
+            content.innerHTML = `<h2>Error loading ${page} page</h2>`;
           });
         break;
 
       case 'player':
-        // playerページへ行く場合、映像を表示したい
+        // playerページはフッター非表示にしたい
+        footer.style.display = 'none';
+
         fetch('pages/player.html')
           .then(res => res.text())
           .then(html => {
@@ -92,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoListEl = document.getElementById('videoList');
     if (!videoListEl) return;
 
-    // preload.js経由で動画一覧取得
     if (window.videoAPI && typeof window.videoAPI.getVideoData === 'function') {
       videos = window.videoAPI.getVideoData();
     } else {
@@ -124,26 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================
-  // playerページ初期化
-  // ==========================
-  function initPlayerPage() {
-    const playerContainer = document.getElementById('playerContainer');
-    const backBtn = document.getElementById('backToList');
-    if (!playerContainer || !backBtn) return;
-
-    // playerページへ来た時に、映像を表示状態にする
-    // (まだcurrentIndexが-1なら動画選択なしで映像出さない)
-    if (sharedVideo && currentIndex >= 0) {
-      playerContainer.appendChild(sharedVideo);
-      sharedVideo.style.display = 'block';  // 映像を表示
-    }
-
-    backBtn.addEventListener('click', () => {
-      loadPage('list');
-    });
-  }
-
-  // ==========================
   // urlページ初期化
   // ==========================
   function initUrlPage() {
@@ -151,7 +122,32 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!urlForm) return;
     urlForm.addEventListener('submit', e => {
       e.preventDefault();
-      // ここでURL入力処理など
+      // URL入力関連
+    });
+  }
+
+  // ==========================
+  // playerページ初期化
+  // ==========================
+  function initPlayerPage() {
+    const playerContainer = document.getElementById('playerContainer');
+    const backBtn = document.getElementById('backToList');
+    if (!playerContainer || !backBtn) return;
+
+    // playerページに来たらフッター非表示 (もう済みだけど念のため)
+    footer.style.display = 'none';
+
+    // 映像を表示 (videoをplayerContainerへappend)
+    if (globalVideo && currentIndex >= 0) {
+      playerContainer.appendChild(globalVideo);
+      globalVideo.style.display = 'block';
+      // もしフッター操作だけだったら controls=false かもしれませんが
+      // 今回は「playerページで動画の操作をしたい」→ controls=true
+      globalVideo.controls = true;
+    }
+
+    backBtn.addEventListener('click', () => {
+      loadPage('list');
     });
   }
 
@@ -161,63 +157,62 @@ document.addEventListener('DOMContentLoaded', () => {
   function playVideo(index) {
     if (!videos[index]) return;
     if (index === currentIndex) {
-      // 既に同じ動画を再生中なら何もしない (シームレス)
+      // 既に同じ動画を再生中なら何もしない
       return;
     }
     currentIndex = index;
     const vid = videos[index];
 
-    // sharedVideoが未生成なら作っておく
-    if (!sharedVideo) {
-      sharedVideo = document.createElement('video');
-      sharedVideo.id = 'sharedVideo';
-      sharedVideo.preload = 'auto';
-      sharedVideo.playsInline = true;
-      sharedVideo.controls = false; // フッターで操作する
-      sharedVideo.style.display = 'none'; // 初期は非表示
-      hiddenHolder.appendChild(sharedVideo); // 最初は隠しホルダーに
-      initVideoEvents(); // イベント付与
+    // 初回生成
+    if (!globalVideo) {
+      globalVideo = document.createElement('video');
+      globalVideo.id = 'globalVideo';
+      globalVideo.preload = 'auto';
+      globalVideo.playsInline = true;
+      // フッターで操作するなら controls=false, しかしplayerページで操作するならここをtrueでもOK
+      // -> 今回は playerページに行く時に controls=true にしている
+      globalVideo.controls = false;
+
+      globalVideo.style.display = 'none';
+      hiddenHolder.appendChild(globalVideo); 
+      initVideoEvents();
     }
 
-    // srcが違うならセット
-    if (sharedVideo.src !== vid.src) {
-      sharedVideo.src = vid.src;
-      sharedVideo.load();
+    // src切り替え
+    if (globalVideo.src !== vid.src) {
+      globalVideo.src = vid.src;
+      globalVideo.load();
     }
 
-    // フッターにサムネ/タイトル
+    // フッター用の情報
     footerThumbnail.src = vid.thumbnail || '';
     footerTitle.textContent = vid.title || '(No Title)';
 
-    // フッターを表示
-    footer.style.display = 'flex';
-
-    // 再生開始 (エラーは握りつぶし)
-    sharedVideo.play().catch(err => console.warn('play error:', err));
+    // 再生開始
+    globalVideo.play().catch(err => console.warn(err));
   }
 
   // ==========================
-  // <video> イベント & フッター操作初期化
+  // <video> イベント & フッター操作
   // ==========================
   function initVideoEvents() {
     // 再生/一時停止
     playPauseBtn.addEventListener('click', () => {
-      if (sharedVideo.paused) {
-        sharedVideo.play().catch(e => console.warn(e));
+      if (globalVideo.paused) {
+        globalVideo.play().catch(e => console.warn(e));
       } else {
-        sharedVideo.pause();
+        globalVideo.pause();
       }
     });
-
-    sharedVideo.addEventListener('play', () => {
+    globalVideo.addEventListener('play', () => {
       playPauseBtn.textContent = '⏸';
       updateProgress();
     });
-    sharedVideo.addEventListener('pause', () => {
+    globalVideo.addEventListener('pause', () => {
       playPauseBtn.textContent = '⏵︎';
     });
 
-    // 次へ/前へ
+    // 次/前
     nextBtn.addEventListener('click', () => {
       if (currentIndex < videos.length - 1) {
         playVideo(currentIndex + 1);
@@ -229,11 +224,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // シークバー
+    // シーク
     seekBar.addEventListener('input', () => {
       isSeeking = true;
-      const newTime = (seekBar.value / 100) * (sharedVideo.duration || 0);
-      sharedVideo.currentTime = newTime;
+      const newTime = (seekBar.value / 100) * (globalVideo.duration || 0);
+      globalVideo.currentTime = newTime;
     });
     seekBar.addEventListener('change', () => {
       isSeeking = false;
@@ -241,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 音量
     volumeSlider.addEventListener('input', () => {
-      sharedVideo.volume = volumeSlider.value;
+      globalVideo.volume = volumeSlider.value;
     });
   }
 
@@ -249,17 +244,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // プログレスバー更新
   // ==========================
   function updateProgress() {
-    if (!sharedVideo.paused && !sharedVideo.ended) {
-      const pct = (sharedVideo.currentTime / sharedVideo.duration) * 100 || 0;
+    if (!globalVideo.paused && !globalVideo.ended) {
+      const pct = (globalVideo.currentTime / globalVideo.duration) * 100 || 0;
       if (!isSeeking) {
         seekBar.value = pct;
       }
-      timeDisplay.textContent = formatTime(sharedVideo.currentTime);
+      timeDisplay.textContent = formatTime(globalVideo.currentTime);
       requestAnimationFrame(updateProgress);
     } else {
-      // 一時停止 or 再生終了
+      // 一時停止 or 終了
       if (!isSeeking) {
-        const pct = (sharedVideo.currentTime / (sharedVideo.duration || 1)) * 100;
+        const pct = (globalVideo.currentTime / (globalVideo.duration || 1)) * 100;
         seekBar.value = pct;
       }
     }
@@ -275,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ヘッダーのリンク
   // ==========================
   navLinks.forEach(link => {
-    link.addEventListener('click', e => {
+    link.addEventListener('click', (e) => {
       e.preventDefault();
       const page = link.getAttribute('data-page');
       loadPage(page);
@@ -283,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================
-  // 起動時はlistページへ
+  // 起動時にlistページ
   // ==========================
   loadPage('list');
 });

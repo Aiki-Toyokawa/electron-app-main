@@ -12,7 +12,7 @@
     }
     header {
       position: fixed; top: 0; width: 100%;
-      background: linear-gradient(90deg, #6d1189, #4361c1); /* 元のグラデーション */
+      background: linear-gradient(90deg, #6d1189, #4361c1);
       color: white; padding: 15px 30px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       z-index: 1000;
@@ -23,10 +23,9 @@
       color: white; margin-left: 25px; text-decoration: none; font-weight: 500;
     }
 
-    /* コンテンツ領域 */
     #content {
       flex: 1;
-      padding: 80px 20px 20px; /* ヘッダーの高さぶん空ける */
+      padding: 80px 20px 20px; /* ヘッダー高さ80px分の余白 */
       overflow-y: auto;
       background-color: #f9f9f9;
     }
@@ -36,10 +35,9 @@
       position: fixed; bottom: 0; width: 100%;
       background: #222; color: #fff; padding: 10px 20px;
       box-sizing: border-box; z-index: 1000;
-      display: none; /* 動画未再生時は非表示 */
+      display: none; /* listやurlページで動画再生中のみ表示 */
       align-items: center; justify-content: space-between;
     }
-    /* フッター左側: サムネ+タイトル */
     #footerLeft {
       display: flex; align-items: center; gap: 10px;
     }
@@ -50,34 +48,28 @@
       font-size: 16px; font-weight: bold;
       max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    /* フッター右側: コントロール群 */
     #footerControls {
       display: flex; align-items: center; gap: 8px;
     }
     #footerControls button {
       background: none; border: none; color: #fff; font-size: 18px; cursor: pointer;
-      width: 32px; height: 32px; /* アイコンボタン風 */
+      width: 32px; height: 32px;
     }
     #timeDisplay {
-      font-size: 12px;
-      min-width: 50px; text-align: center;
+      font-size: 12px; min-width: 50px; text-align: center;
     }
     #seekBar, #volumeSlider {
-      appearance: none;
-      background: #666; height: 4px; border-radius: 2px;
+      appearance: none; background: #666; height: 4px; border-radius: 2px;
     }
-    #seekBar {
-      width: 150px;
-    }
-    #volumeSlider {
-      width: 80px;
-    }
+    #seekBar { width: 150px; }
+    #volumeSlider { width: 80px; }
 
-    /* アプリ全体で1つだけのvideo要素 (playerページで表示するとき以外は隠しコンテナにいる) */
-    #sharedVideo {
-      width: 640px; height: 360px; /* デフォルトの大きさ */
-      background: #000; /* 背景(映像外周) */
-      display: block; /* playerで使用時に有効 */
+    /* video(=globalVideo)がDOMに存在し続ける。
+       playerページ以外の時は hiddenHolder に入れて display:none する想定 */
+    #globalVideo {
+      width: 640px; height: 360px;
+      background: #000;
+      display: block;
     }
   </style>
 </head>
@@ -91,10 +83,10 @@
     </nav>
   </header>
 
-  <!-- SPA的に中身を差し込むコンテナ -->
+  <!-- SPAの切り替え部分 -->
   <div id="content"></div>
 
-  <!-- フッター(サムネや操作ボタン) -->
+  <!-- フッター (list/urlページなどで再生中の動画を操作可能) -->
   <footer id="footer">
     <div id="footerLeft">
       <img id="footerThumbnail" src="" alt="thumbnail">
@@ -110,7 +102,7 @@
     </div>
   </footer>
 
-  <!-- 隠しコンテナ: playerページでない時、この中に<video>が移動してくる -->
+  <!-- playerページじゃない時はここにvideoを移動する -->
   <div id="hiddenHolder" style="display:none;"></div>
 
   <script src="app.js"></script>
