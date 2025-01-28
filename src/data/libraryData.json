@@ -23,7 +23,7 @@
       "folderId": "folder001",
       "folderName": "お気に入り",
       "folderOrder": 1,
-      "delete": false,
+      "delete": true,
       "visible": true,
       "media_files": [
         {
@@ -37,7 +37,7 @@
       "folderId": "folder002",
       "folderName": "作業BGM",
       "folderOrder": 2,
-      "delete": false,
+      "delete": true,
       "visible": true,
       "media_files": []
     }
