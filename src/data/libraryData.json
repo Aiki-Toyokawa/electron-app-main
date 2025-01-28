@@ -1,0 +1,45 @@
+{
+  "folders": [
+    {
+      "folderId": "root",
+      "folderName": "すべての動画",
+      "folderOrder": 0,
+      "delete": false,
+      "visible": true,
+      "media_files": [
+        {
+          "mediaId": "vid001",
+          "mediaName": "サンプル動画1",
+          "mediaOrder": 0
+        },
+        {
+          "mediaId": "vid002",
+          "mediaName": "サンプル動画2",
+          "mediaOrder": 1
+        }
+      ]
+    },
+    {
+      "folderId": "folder001",
+      "folderName": "お気に入り",
+      "folderOrder": 1,
+      "delete": false,
+      "visible": true,
+      "media_files": [
+        {
+          "mediaId": "vid001",
+          "mediaName": "サンプル動画1",
+          "mediaOrder": 0
+        }
+      ]
+    },
+    {
+      "folderId": "folder002",
+      "folderName": "作業BGM",
+      "folderOrder": 2,
+      "delete": false,
+      "visible": true,
+      "media_files": []
+    }
+  ]
+}

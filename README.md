@@ -157,6 +157,7 @@ userData.json
 
 ## libraryData.jsonの構成
 library.htmlのUIから論理フォルダ作成を行う(名前の重複は不可)
+ユーザデータの統計は別途userData.jsonで行う
 
 libraryData.json
 - folders
@@ -164,4 +165,9 @@ libraryData.json
     - folderId
     - folderName
     - folderOrder
-    - folder
+    - etc...
+    - media_files
+      - mediaId
+      - mediaName
+      - mediaOrder
+      - etc... 
