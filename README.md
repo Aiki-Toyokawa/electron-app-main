@@ -150,3 +150,18 @@ videoIds はルートフォルダに影響せず、そのフォルダのリス�
 3. 動画のメタデータやランキング
 動画IDをキーに再生回数などの統計を参照してランキングを生成
 例：「累計再生回数トップ10」「累計再生時間トップ10」「最後に再生した日時が新しい順」など
+
+userData.json
+- statistics
+  - ユーザの統計情報(再生時間、時間帯、トップランキング記録)など
+
+## libraryData.jsonの構成
+library.htmlのUIから論理フォルダ作成を行う(名前の重複は不可)
+
+libraryData.json
+- folders
+  - 各folder(jsonで分ける論理フォルダ)
+    - folderId
+    - folderName
+    - folderOrder
+    - folder
