@@ -4,8 +4,11 @@
       "folderId": "root",
       "folderName": "すべての動画",
       "folderOrder": 0,
-      "delete": false,
+      "deletable": false,
       "visible": true,
+      "createAt": "",
+      "updateAt": "",
+      "files_count": 2,
       "media_files": [
         {
           "mediaId": "vid001",
@@ -23,8 +26,9 @@
       "folderId": "folder001",
       "folderName": "お気に入り",
       "folderOrder": 1,
-      "delete": true,
+      "deletable": true,
       "visible": true,
+      "files_count": 1,
       "media_files": [
         {
           "mediaId": "vid001",
@@ -37,8 +41,9 @@
       "folderId": "folder002",
       "folderName": "作業BGM",
       "folderOrder": 2,
-      "delete": true,
+      "deletable": true,
       "visible": true,
+      "files_count": 0,
       "media_files": []
     }
   ]

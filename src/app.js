@@ -1,8 +1,8 @@
 /*************************************************************
  * app.js 
  * - SPAページ切替: list, url, library, player
- * - library.html で src/data/libraryData.json を読み込み、
- *   フォルダ名 + ファイル数 を表示 ( delete: true は無視 )
+ * - library.html で ./data/libraryData.json をfetchし、
+ *   フォルダ名 + files_count を表示 (delete: true は無視)
  * 
  * - フォルダ作成ボタン: ダミー動作 (実ファイル保存はしない)
  *************************************************************/
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
       case 'url':
       case 'library': {
         // playerページ以外 → フッターを再生中なら表示
-        //                   → videoをhiddenHolderに戻し映像を隠す
+        //                   → <video>を hiddenHolder に戻して映像を隠す
         if (globalVideo && hiddenHolder) {
           hiddenHolder.appendChild(globalVideo);
           globalVideo.style.display = 'none';
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
       item.appendChild(thumb);
       item.appendChild(title);
 
-      // クリックで再生 & player画面へ
+      // クリックで再生 → playerページへ
       item.addEventListener('click', () => {
         playVideo(idx);
         loadPage('player');
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const urlInput = document.getElementById('urlInput').value.trim();
       console.log("URL submitted:", urlInput);
-      // TODO: 何か処理
+      // TODO: 何らかの処理
     });
   }
 
@@ -148,12 +148,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const backBtn = document.getElementById('backToList');
     if (!playerContainer || !backBtn) return;
 
-    // フッター非表示(上記switchで設定済み)
+    // フッターはすでに非表示状態
     // 映像を表示
     if (globalVideo && currentIndex >= 0) {
       playerContainer.appendChild(globalVideo);
       globalVideo.style.display = 'block';
-      globalVideo.controls = true; // コントロールを出す
+      globalVideo.controls = true;
     }
 
     backBtn.addEventListener('click', () => {
@@ -162,18 +162,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================
-  // libraryData.json をfetchして表示
+  // libraryページ初期化
   // ==========================
   function initLibraryPage() {
     const folderListEl    = document.getElementById('folderList');
     const createFolderBtn = document.getElementById('createFolderBtn');
+
     if (!folderListEl || !createFolderBtn) {
       console.error("library.htmlのDOM要素が見つかりません。");
       return;
     }
 
-    // 1. JSONをfetchで取得 (delete:trueは無視、 visible===trueなら表示)
-    fetch('./data/libraryData.json') 
+    // 1. JSON読み込み (delete: trueは無視, visible: trueのみ表示)
+    fetch('./data/libraryData.json')
       .then(res => {
         if (!res.ok) {
           throw new Error(`Fail to load libraryData.json: ${res.status}`);
@@ -182,15 +183,15 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .then(json => {
         const allFolders = json.folders || [];
-        // 2. フォルダを表示順(folderOrder)でソート
-        //    deleteフラグはUIでは無視. visible===true のみ
-        const sorted = allFolders
-          .filter(f => f.visible === true) // visibleのみ
-          .sort((a, b) => (a.folderOrder||0) - (b.folderOrder||0));
+        // visible===true のみ
+        const filtered = allFolders.filter(f => f.visible === true);
 
-        // 3. 表示を組み立て
+        // folderOrderでソート
+        filtered.sort((a, b) => (a.folderOrder || 0) - (b.folderOrder || 0));
+
+        // 2. DOMに表示
         folderListEl.innerHTML = '';
-        sorted.forEach(folder => {
+        filtered.forEach(folder => {
           const item = document.createElement('div');
           item.classList.add('folder-item');
 
@@ -199,35 +200,38 @@ document.addEventListener('DOMContentLoaded', () => {
           nameEl.classList.add('folder-name');
           nameEl.textContent = folder.folderName;
 
-          // メディアファイル数
+          // files_count を表示する (fallbackで media_files.length してもOK)
           const infoEl = document.createElement('div');
           infoEl.classList.add('folder-info');
-          const fileCount = folder.media_files ? folder.media_files.length : 0;
+          const fileCount = (folder.files_count !== undefined) 
+            ? folder.files_count 
+            : (folder.media_files ? folder.media_files.length : 0);
+
           infoEl.textContent = `動画数: ${fileCount}`;
 
           item.appendChild(nameEl);
           item.appendChild(infoEl);
 
+          // クリック
           item.addEventListener('click', () => {
             console.log(`フォルダ "${folder.folderName}" がクリックされました。`);
-            // TODO: フォルダ詳細ページへ行くなら loadPage('folderDetail') 等
           });
 
           folderListEl.appendChild(item);
         });
       })
       .catch(err => {
-        console.error("libraryData.json 読み込みエラー:", err);
+        console.error("libraryData.json読み込みエラー:", err);
         folderListEl.innerHTML = `<p style="color:red">フォルダ情報の読み込みに失敗しました</p>`;
       });
 
-    // フォルダ作成ボタン (ダミー)
+    // 3. フォルダ作成ボタン (ダミー)
     createFolderBtn.addEventListener('click', () => {
       const folderName = prompt("新しいフォルダ名を入力(ダミー)");
       if (!folderName) return;
-      // 実際にはここで JSONファイル更新処理 or サーバPOSTなど
-      console.log(`「${folderName}」フォルダを作成(ダミー)`);
-      alert("ダミーフォルダ作成完了。（実ファイルへは未反映）");
+      // 実際のファイル書き込みはしない
+      console.log(`[ダミー] フォルダ '${folderName}' を作成要求`);
+      alert("ダミーフォルダ作成完了。（JSONには未反映）");
     });
   }
 
@@ -236,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================
   function playVideo(index) {
     if (!videos[index]) return;
-    if (index === currentIndex) return; // 同じ
+    if (index === currentIndex) return;
     currentIndex = index;
     const vid = videos[index];
 
@@ -253,6 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
       initVideoEvents();
     }
 
+    // src 切り替え
     if (globalVideo.src !== vid.src) {
       globalVideo.src = vid.src;
       globalVideo.load();
@@ -304,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateProgress() {
     if (!globalVideo.paused && !globalVideo.ended) {
-      const pct = (globalVideo.currentTime / globalVideo.duration) * 100 || 0;
+      const pct = (globalVideo.currentTime / globalVideo.duration)*100 || 0;
       if (!isSeeking) seekBar.value = pct;
       timeDisplay.textContent = formatTime(globalVideo.currentTime);
       requestAnimationFrame(updateProgress);
@@ -315,6 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
+
   function formatTime(sec) {
     if (!sec || isNaN(sec)) return '0:00';
     const m = Math.floor(sec/60);
@@ -322,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${m}:${s<10?'0':''}${s}`;
   }
 
-  // ヘッダーナビゲーション
+  // ヘッダーのリンク
   navLinks.forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
@@ -331,6 +337,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 起動時 listページ
+  // 起動時に list
   loadPage('list');
 });
