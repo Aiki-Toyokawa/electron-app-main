@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     switch (page) {
       case 'list':
       case 'url':
+      case 'library':
         // playerページではなくなるので、フッターを表示する(もし再生中なら)
         // かつ videoを hiddenHolder に戻して映像隠す
         if (globalVideo && hiddenHolder) {
@@ -48,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
             content.innerHTML = html;
             if (page === 'list') initListPage();
             else if (page === 'url') initUrlPage();
+            else if (page === 'library') initLibraryPage();
           })
           .catch(err => {
             console.error(err);
@@ -148,6 +150,115 @@ document.addEventListener('DOMContentLoaded', () => {
       loadPage('list');
     });
   }
+
+  // ==========================
+  // playerページ初期化
+  // ==========================
+  function initLibraryPage() {
+    const folderListEl = document.getElementById('folderList');
+    const createFolderBtn = document.getElementById('createFolderBtn');
+  
+    if (!folderListEl || !createFolderBtn) return;
+  
+    // 1. foldersをロード (もし"folders"がapp.jsの上部などで読み込まれているなら以下イメージ)
+    //   例: folders = [ { id, name, videoIds, order, ... }, ...]
+    //   すでに "videos" という変数がある場合、"folders" も同じように
+    //   userData.json 等からpreload.jsで取得しているか、app.js冒頭で定義しているかの想定
+  
+    // もし folders がまだundefinedならダミー初期化など
+    if (!window.folders) {
+      window.folders = [
+        // rootフォルダなどのダミーデータ
+        {
+          id: "root",
+          name: "すべての動画",
+          fixed: true,
+          visible: true,
+          videoIds: ["vid001", "vid002"],
+          order: 0
+        }
+        // ...ユーザー作成フォルダなど
+      ];
+    }
+  
+    // 2. foldersを表示順(order)でソートして並べる
+    const sortedFolders = window.folders.slice().sort((a, b) => a.order - b.order);
+  
+    // 3. DOM生成
+    folderListEl.innerHTML = ''; // 一旦クリア
+  
+    sortedFolders.forEach(folder => {
+      // ルートフォルダのvisibleがfalseの場合は非表示にする
+      if (folder.id === 'root' && !folder.visible) {
+        return; 
+      }
+  
+      const item = document.createElement('div');
+      item.classList.add('folder-item');
+  
+      // フォルダ名(重複不可の想定)
+      const nameEl = document.createElement('div');
+      nameEl.classList.add('folder-name');
+      nameEl.textContent = folder.name;
+  
+      // 動画数などの情報
+      const infoEl = document.createElement('div');
+      infoEl.classList.add('folder-info');
+      infoEl.textContent = `動画数: ${folder.videoIds.length}`;
+  
+      item.appendChild(nameEl);
+      item.appendChild(infoEl);
+  
+      // クリックしたらフォルダ内の動画リストを表示するとか、別ページに行く等
+      item.addEventListener('click', () => {
+        // 例: "folderView"ページなどを作る or folder専用URLに遷移
+        //      ここでは簡単に console.log
+        console.log(`フォルダ "${folder.name}" をクリックしました`);
+        // もしフォルダ内動画一覧を表示したいなら、別途UIを作る
+      });
+  
+      folderListEl.appendChild(item);
+    });
+  
+    // 4. 新規フォルダ作成ボタン
+    createFolderBtn.addEventListener('click', () => {
+      const folderName = prompt("新しいフォルダ名を入力してください (重複不可)");
+      if (!folderName) return;
+  
+      // 名前の重複チェック
+      const exists = folders.some(f => f.name === folderName);
+      if (exists) {
+        alert("そのフォルダ名はすでに存在します！");
+        return;
+      }
+  
+      // 新規フォルダ追加
+      const newId = generateFolderId(); // 適宜ユニークID生成関数
+      const maxOrder = Math.max(...folders.map(f => f.order));
+      const newFolder = {
+        id: newId,
+        name: folderName,
+        fixed: false,
+        visible: true,
+        videoIds: [],
+        order: maxOrder + 1
+      };
+      folders.push(newFolder);
+  
+      // JSONファイルに保存する処理が必要ならここで実装
+      // 例: saveFoldersToJson(folders);
+  
+      // 再表示
+      initLibraryPage();
+    });
+  }
+  
+  // ユニークID生成のサンプル (簡易版)
+  function generateFolderId() {
+    return 'folder' + Date.now(); 
+  }  
+
+
 
   // ==========================
   // 動画を再生
