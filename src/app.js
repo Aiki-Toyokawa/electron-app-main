@@ -1,12 +1,14 @@
 /*************************************************************
- * app.js 
- * - SPAページ切替: list, url, library, player
- * - library.html で ./data/libraryData.json をfetchし、
+ * app.js
+ * - SPAページ: list, url, library, player
+ * - library.html : fetch('./data/libraryData.json') で読み込み
  *   フォルダ名 + files_count を表示 (delete: true は無視)
- * 
- * - フォルダ作成ボタン: ダミー動作 (実ファイル保存はしない)
+ * - フォルダ作成ボタン: ダミー動作 (実ファイル保存は行わない)
  *************************************************************/
+
 document.addEventListener('DOMContentLoaded', () => {
+  console.log("app.js: DOMContentLoaded fired.");
+
   const content    = document.getElementById('content');
   const navLinks   = document.querySelectorAll('nav a');
 
@@ -24,21 +26,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // playerページ以外の時に <video> を退避する要素
   const hiddenHolder = document.getElementById('hiddenHolder');
 
-  let globalVideo = null; // アプリ全体で1つだけの<video>
-  let videos = [];        // 動画リスト
-  let currentIndex = -1;  // 再生中の動画 (未選択は-1)
-  let isSeeking = false;  // シークバー操作中フラグ
+  let globalVideo = null; 
+  let videos = [];        
+  let currentIndex = -1;  
+  let isSeeking = false;  
 
-  // ==========================
-  // SPAページ切り替え
-  // ==========================
+  /**************************************************
+   * SPAページ切り替え
+   **************************************************/
   function loadPage(page) {
+    console.log(`loadPage called: ${page}`);
+
     switch (page) {
       case 'list':
       case 'url':
       case 'library': {
-        // playerページ以外 → フッターを再生中なら表示
-        //                   → <video>を hiddenHolder に戻して映像を隠す
         if (globalVideo && hiddenHolder) {
           hiddenHolder.appendChild(globalVideo);
           globalVideo.style.display = 'none';
@@ -49,23 +51,24 @@ document.addEventListener('DOMContentLoaded', () => {
           footer.style.display = 'none';
         }
 
+        // pages/xxx.html を fetch して切り替え
         fetch(`pages/${page}.html`)
           .then(res => res.text())
           .then(html => {
             content.innerHTML = html;
-            if (page === 'list')    initListPage();
-            if (page === 'url')     initUrlPage();
-            if (page === 'library') initLibraryPage();
+            if      (page === 'list')    initListPage();
+            else if (page === 'url')     initUrlPage();
+            else if (page === 'library') initLibraryPage();
           })
           .catch(err => {
-            console.error(err);
+            console.error(`Error loading page: ${page}`, err);
             content.innerHTML = `<h2>Error loading ${page} page</h2>`;
           });
         break;
       }
 
       case 'player': {
-        // playerページ → フッター非表示
+        console.log("loading player page...");
         footer.style.display = 'none';
 
         fetch('pages/player.html')
@@ -75,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             initPlayerPage();
           })
           .catch(err => {
-            console.error(err);
+            console.error("Error loading player page:", err);
             content.innerHTML = '<h2>Error loading player page</h2>';
           });
         break;
@@ -83,18 +86,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
       default:
         content.innerHTML = '<h2>404 Not Found</h2>';
-        break;
     }
   }
 
-  // ==========================
-  // listページ初期化
-  // ==========================
+  /**************************************************
+   * list ページ初期化
+   **************************************************/
   function initListPage() {
+    console.log("initListPage");
     const videoListEl = document.getElementById('videoList');
     if (!videoListEl) return;
 
-    // preload.js 経由で動画一覧取得
+    // preload.js経由で動画一覧を取得
     if (window.videoAPI && typeof window.videoAPI.getVideoData === 'function') {
       videos = window.videoAPI.getVideoData() || [];
     } else {
@@ -116,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
       item.appendChild(thumb);
       item.appendChild(title);
 
-      // クリックで再生 → playerページへ
+      // クリックで再生 → player
       item.addEventListener('click', () => {
         playVideo(idx);
         loadPage('player');
@@ -125,10 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ==========================
-  // urlページ初期化
-  // ==========================
+  /**************************************************
+   * url ページ初期化
+   **************************************************/
   function initUrlPage() {
+    console.log("initUrlPage");
     const urlForm = document.getElementById('urlForm');
     if (!urlForm) return;
 
@@ -136,20 +140,19 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const urlInput = document.getElementById('urlInput').value.trim();
       console.log("URL submitted:", urlInput);
-      // TODO: 何らかの処理
+      // TODO: 何か処理
     });
   }
 
-  // ==========================
-  // playerページ初期化
-  // ==========================
+  /**************************************************
+   * player ページ初期化
+   **************************************************/
   function initPlayerPage() {
+    console.log("initPlayerPage");
     const playerContainer = document.getElementById('playerContainer');
     const backBtn = document.getElementById('backToList');
     if (!playerContainer || !backBtn) return;
 
-    // フッターはすでに非表示状態
-    // 映像を表示
     if (globalVideo && currentIndex >= 0) {
       playerContainer.appendChild(globalVideo);
       globalVideo.style.display = 'block';
@@ -161,19 +164,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ==========================
-  // libraryページ初期化
-  // ==========================
+  /**************************************************
+   * library ページ初期化
+   **************************************************/
   function initLibraryPage() {
+    console.log("initLibraryPage");
     const folderListEl    = document.getElementById('folderList');
     const createFolderBtn = document.getElementById('createFolderBtn');
 
-    if (!folderListEl || !createFolderBtn) {
-      console.error("library.htmlのDOM要素が見つかりません。");
+    // モーダル
+    const folderModal     = document.getElementById('folderModal');
+    const folderNameInput = document.getElementById('folderNameInput');
+    const cancelModalBtn  = document.getElementById('cancelModalBtn');
+    const okModalBtn      = document.getElementById('okModalBtn');
+
+    if (!folderListEl || !createFolderBtn || 
+        !folderModal || !folderNameInput || 
+        !cancelModalBtn || !okModalBtn) {
+      console.error("library.html DOM elements not found.");
       return;
     }
 
-    // 1. JSON読み込み (delete: trueは無視, visible: trueのみ表示)
+    // JSON読み込み (delete:true無視, visible:trueのみ)
     fetch('./data/libraryData.json')
       .then(res => {
         if (!res.ok) {
@@ -182,14 +194,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return res.json();
       })
       .then(json => {
+        console.log("libraryData.json loaded:", json);
         const allFolders = json.folders || [];
         // visible===true のみ
         const filtered = allFolders.filter(f => f.visible === true);
+        // folderOrder ソート
+        filtered.sort((a,b) => (a.folderOrder||0) - (b.folderOrder||0));
 
-        // folderOrderでソート
-        filtered.sort((a, b) => (a.folderOrder || 0) - (b.folderOrder || 0));
-
-        // 2. DOMに表示
         folderListEl.innerHTML = '';
         filtered.forEach(folder => {
           const item = document.createElement('div');
@@ -200,44 +211,58 @@ document.addEventListener('DOMContentLoaded', () => {
           nameEl.classList.add('folder-name');
           nameEl.textContent = folder.folderName;
 
-          // files_count を表示する (fallbackで media_files.length してもOK)
+          // files_count or fallback media_files.length
           const infoEl = document.createElement('div');
           infoEl.classList.add('folder-info');
-          const fileCount = (folder.files_count !== undefined) 
-            ? folder.files_count 
+          const fileCount = (folder.files_count != null)
+            ? folder.files_count
             : (folder.media_files ? folder.media_files.length : 0);
-
           infoEl.textContent = `動画数: ${fileCount}`;
 
           item.appendChild(nameEl);
           item.appendChild(infoEl);
 
-          // クリック
           item.addEventListener('click', () => {
-            console.log(`フォルダ "${folder.folderName}" がクリックされました。`);
+            console.log(`フォルダ "${folder.folderName}" clicked.`);
           });
 
           folderListEl.appendChild(item);
         });
       })
       .catch(err => {
-        console.error("libraryData.json読み込みエラー:", err);
+        console.error("Failed to load libraryData.json:", err);
         folderListEl.innerHTML = `<p style="color:red">フォルダ情報の読み込みに失敗しました</p>`;
       });
 
-    // 3. フォルダ作成ボタン (ダミー)
+    // フォルダ作成ボタン → モーダル表示
     createFolderBtn.addEventListener('click', () => {
-      const folderName = prompt("新しいフォルダ名を入力(ダミー)");
-      if (!folderName) return;
-      // 実際のファイル書き込みはしない
-      console.log(`[ダミー] フォルダ '${folderName}' を作成要求`);
-      alert("ダミーフォルダ作成完了。（JSONには未反映）");
+      folderNameInput.value = '';
+      folderModal.style.display = 'flex';
+    });
+
+    // キャンセル → 閉じる
+    cancelModalBtn.addEventListener('click', () => {
+      folderModal.style.display = 'none';
+    });
+
+    // 作成 → ダミー動作
+    okModalBtn.addEventListener('click', () => {
+      const newName = folderNameInput.value.trim();
+      if (!newName) {
+        alert("フォルダ名を入力してください。");
+        return;
+      }
+      console.log(`[ダミー] 新フォルダ "${newName}" を作成(実ファイル書き込みは未実装)`);
+      alert(`フォルダ「${newName}」を作成しました (ダミー)。`);
+
+      folderModal.style.display = 'none';
+      // 再描画が必要ならinitLibraryPage()再呼び出し etc.
     });
   }
 
-  // ==========================
-  // 動画を再生
-  // ==========================
+  /**************************************************
+   * 動画を再生
+   **************************************************/
   function playVideo(index) {
     if (!videos[index]) return;
     if (index === currentIndex) return;
@@ -257,7 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
       initVideoEvents();
     }
 
-    // src 切り替え
     if (globalVideo.src !== vid.src) {
       globalVideo.src = vid.src;
       globalVideo.load();
@@ -266,14 +290,15 @@ document.addEventListener('DOMContentLoaded', () => {
     footerTitle.textContent = vid.title || '(No Title)';
 
     footer.style.display = 'flex';
-
-    globalVideo.play().catch(err => console.warn(err));
+    globalVideo.play().catch(err => console.warn("play error:", err));
   }
 
-  // フッターのvideoイベント
+  /**************************************************
+   * フッターのvideoイベント
+   **************************************************/
   function initVideoEvents() {
     playPauseBtn.addEventListener('click', () => {
-      if (globalVideo.paused) globalVideo.play().catch(e => console.warn(e));
+      if (globalVideo.paused) globalVideo.play().catch(e=>console.warn(e));
       else globalVideo.pause();
     });
     globalVideo.addEventListener('play', () => {
@@ -297,11 +322,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     seekBar.addEventListener('input', () => {
       isSeeking = true;
-      const val = (seekBar.value / 100) * (globalVideo.duration||0);
+      const val = (seekBar.value/100)*(globalVideo.duration||0);
       globalVideo.currentTime = val;
     });
-    seekBar.addEventListener('change', () => { isSeeking = false; });
-
+    seekBar.addEventListener('change', () => {
+      isSeeking = false;
+    });
     volumeSlider.addEventListener('input', () => {
       globalVideo.volume = volumeSlider.value;
     });
@@ -328,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${m}:${s<10?'0':''}${s}`;
   }
 
-  // ヘッダーのリンク
+  // ヘッダーナビゲーション
   navLinks.forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
@@ -337,6 +363,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 起動時に list
+  // アプリ起動時にlistページ
   loadPage('list');
 });
