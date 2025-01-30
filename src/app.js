@@ -3,7 +3,8 @@
  * - SPAページ: list, url, library, player
  * - library.html : fetch('./data/libraryData.json') で読み込み
  *   フォルダ名 + files_count を表示 (delete: true は無視)
- * - フォルダ作成ボタン: ダミー動作 (実ファイル保存は行わない)
+ * - フォルダ作成ボタン: 実ファイル書き込み (contextIsolation: true)
+ *   → preload.js の window.libraryAPI.save() を呼ぶ
  *************************************************************/
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -23,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const seekBar         = document.getElementById('seekBar');
   const volumeSlider    = document.getElementById('volumeSlider');
 
-  // playerページ以外の時に <video> を退避する要素
+  // playerページ以外時に <video> を退避
   const hiddenHolder = document.getElementById('hiddenHolder');
 
   let globalVideo = null; 
@@ -51,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
           footer.style.display = 'none';
         }
 
-        // pages/xxx.html を fetch して切り替え
         fetch(`pages/${page}.html`)
           .then(res => res.text())
           .then(html => {
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoListEl = document.getElementById('videoList');
     if (!videoListEl) return;
 
-    // preload.js経由で動画一覧を取得
+    // preload.js の videoAPI
     if (window.videoAPI && typeof window.videoAPI.getVideoData === 'function') {
       videos = window.videoAPI.getVideoData() || [];
     } else {
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**************************************************
-   * url ページ初期化
+   * url ページ
    **************************************************/
   function initUrlPage() {
     console.log("initUrlPage");
@@ -140,12 +140,12 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const urlInput = document.getElementById('urlInput').value.trim();
       console.log("URL submitted:", urlInput);
-      // TODO: 何か処理
+      // TODO
     });
   }
 
   /**************************************************
-   * player ページ初期化
+   * player ページ
    **************************************************/
   function initPlayerPage() {
     console.log("initPlayerPage");
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**************************************************
-   * library ページ初期化
+   * library ページ
    **************************************************/
   function initLibraryPage() {
     console.log("initLibraryPage");
@@ -178,14 +178,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelModalBtn  = document.getElementById('cancelModalBtn');
     const okModalBtn      = document.getElementById('okModalBtn');
 
-    if (!folderListEl || !createFolderBtn || 
-        !folderModal || !folderNameInput || 
+    if (!folderListEl || !createFolderBtn ||
+        !folderModal || !folderNameInput ||
         !cancelModalBtn || !okModalBtn) {
       console.error("library.html DOM elements not found.");
       return;
     }
 
-    // JSON読み込み (delete:true無視, visible:trueのみ)
+    // 1. fetch で libraryData.json 表示
     fetch('./data/libraryData.json')
       .then(res => {
         if (!res.ok) {
@@ -198,7 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const allFolders = json.folders || [];
         // visible===true のみ
         const filtered = allFolders.filter(f => f.visible === true);
-        // folderOrder ソート
         filtered.sort((a,b) => (a.folderOrder||0) - (b.folderOrder||0));
 
         folderListEl.innerHTML = '';
@@ -206,12 +205,11 @@ document.addEventListener('DOMContentLoaded', () => {
           const item = document.createElement('div');
           item.classList.add('folder-item');
 
-          // フォルダ名
           const nameEl = document.createElement('div');
           nameEl.classList.add('folder-name');
           nameEl.textContent = folder.folderName;
 
-          // files_count or fallback media_files.length
+          // files_count or fallback
           const infoEl = document.createElement('div');
           infoEl.classList.add('folder-info');
           const fileCount = (folder.files_count != null)
@@ -234,29 +232,66 @@ document.addEventListener('DOMContentLoaded', () => {
         folderListEl.innerHTML = `<p style="color:red">フォルダ情報の読み込みに失敗しました</p>`;
       });
 
-    // フォルダ作成ボタン → モーダル表示
+    // 2. フォルダ作成ボタン → モーダル
     createFolderBtn.addEventListener('click', () => {
       folderNameInput.value = '';
       folderModal.style.display = 'flex';
     });
 
-    // キャンセル → 閉じる
+    // 3. キャンセル
     cancelModalBtn.addEventListener('click', () => {
       folderModal.style.display = 'none';
     });
 
-    // 作成 → ダミー動作
+    // 4. 作成 → 「libraryAPI」経由でファイルに追記
     okModalBtn.addEventListener('click', () => {
       const newName = folderNameInput.value.trim();
       if (!newName) {
         alert("フォルダ名を入力してください。");
         return;
       }
-      console.log(`[ダミー] 新フォルダ "${newName}" を作成(実ファイル書き込みは未実装)`);
-      alert(`フォルダ「${newName}」を作成しました (ダミー)。`);
 
+      // a) 最新データを preload から読む
+      if (!window.libraryAPI) {
+        console.error("window.libraryAPI is not defined");
+        alert("ファイル操作APIが利用できません");
+        return;
+      }
+      const data = window.libraryAPI.load();  // { folders: [...] }
+      let folders = data.folders || [];
+
+      // b) 重複チェック
+      const dupe = folders.some(f => f.folderName === newName && f.visible === true);
+      if (dupe) {
+        alert("同名フォルダが既に存在します！");
+        return;
+      }
+
+      // c) 新フォルダ追加
+      const newId = 'folder' + Date.now();
+      const maxOrder = (folders.length>0)
+        ? Math.max(...folders.map(f=> f.folderOrder||0))
+        : 0;
+      const newFolder = {
+        folderId: newId,
+        folderName: newName,
+        folderOrder: maxOrder+1,
+        deletable: true,
+        visible: true,
+        files_count: 0,
+        media_files: []
+      };
+      folders.push(newFolder);
+      data.folders = folders;
+
+      // d) 保存
+      window.libraryAPI.save(data);
+
+      alert(`フォルダ「${newName}」を追加しました！`);
       folderModal.style.display = 'none';
-      // 再描画が必要ならinitLibraryPage()再呼び出し etc.
+
+      // e) 再描画
+      initLibraryPage();
     });
   }
 
@@ -269,7 +304,6 @@ document.addEventListener('DOMContentLoaded', () => {
     currentIndex = index;
     const vid = videos[index];
 
-    // 初回video生成
     if (!globalVideo) {
       globalVideo = document.createElement('video');
       globalVideo.id = 'globalVideo';
@@ -363,6 +397,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // アプリ起動時にlistページ
+  // アプリ起動時: list
   loadPage('list');
 });

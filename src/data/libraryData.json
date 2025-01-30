@@ -45,6 +45,24 @@
       "visible": true,
       "files_count": 0,
       "media_files": []
+    },
+    {
+      "folderId": "folder1738255164660",
+      "folderName": "a",
+      "folderOrder": 3,
+      "deletable": true,
+      "visible": true,
+      "files_count": 0,
+      "media_files": []
+    },
+    {
+      "folderId": "folder1738255250946",
+      "folderName": "お片付け",
+      "folderOrder": 4,
+      "deletable": true,
+      "visible": true,
+      "files_count": 0,
+      "media_files": []
     }
   ]
 }
