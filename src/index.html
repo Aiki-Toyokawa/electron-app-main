@@ -18,9 +18,42 @@
       z-index: 1000;
       display: flex; align-items: center; justify-content: space-between;
     }
-    .logo { font-size: 24px; font-weight: bold; }
+    .logo {
+      font-size: 24px; font-weight: bold;
+    }
+    /* ==========================
+       ナビゲーションリンクのデザイン
+       ========================== */
+    nav {
+      display: flex; /* まとめて管理 */
+    }
     nav a {
-      color: white; margin-left: 25px; text-decoration: none; font-weight: 500;
+      position: relative;
+      color: white;
+      margin-left: 25px;
+      text-decoration: none;
+      font-weight: 500;
+      /* 文字色やアンダーラインの変化に備えて、遷移時間を指定 */
+      transition: color 0.3s ease;
+      padding-bottom: 2px; /* 下線用の少し余白 */
+    }
+    /* 下線を擬似要素で作成。width=0→100% で左から右へスライド */
+    nav a::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 2px;
+      background-color: currentColor; /* 文字色に追随 */
+      transition: width 0.3s ease;
+    }
+    /* ホバー時：文字色を変更 & 下線を左→右に */
+    nav a:hover {
+      color: #ffd700; /* ホバー時の文字色 (ゴールド系など) */
+    }
+    nav a:hover::after {
+      width: 100%;
     }
 
     #content {
