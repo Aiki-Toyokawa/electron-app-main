@@ -1,6 +1,6 @@
 // src/js/listPage.js
 import { loadPage } from './navigation.js';
-import { playVideo } from './videoPlayer.js';
+import { playVideo } from './footer-player.js';
 
 export function initListPage() {
   console.log("initListPage");
