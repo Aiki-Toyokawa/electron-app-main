@@ -38,28 +38,55 @@
       ]
     },
     {
-      "folderId": "folder002",
-      "folderName": "作業BGM",
+      "folderId": "folder1738307994419",
+      "folderName": "フォルダー2",
       "folderOrder": 2,
-      "deletable": true,
+      "delete": true,
       "visible": true,
       "files_count": 0,
       "media_files": []
     },
     {
-      "folderId": "folder1738255164660",
-      "folderName": "a",
+      "folderId": "folder1738308251340",
+      "folderName": "aw",
       "folderOrder": 3,
-      "deletable": true,
+      "delete": true,
       "visible": true,
       "files_count": 0,
       "media_files": []
     },
     {
-      "folderId": "folder1738255250946",
-      "folderName": "お片付け",
+      "folderId": "folder1738308256786",
+      "folderName": "フォルダー4",
       "folderOrder": 4,
-      "deletable": true,
+      "delete": true,
+      "visible": true,
+      "files_count": 0,
+      "media_files": []
+    },
+    {
+      "folderId": "folder1738424558834",
+      "folderName": "フォルダー5",
+      "folderOrder": 5,
+      "delete": true,
+      "visible": true,
+      "files_count": 0,
+      "media_files": []
+    },
+    {
+      "folderId": "folder1738426815067",
+      "folderName": "ewfa",
+      "folderOrder": 6,
+      "delete": true,
+      "visible": true,
+      "files_count": 0,
+      "media_files": []
+    },
+    {
+      "folderId": "folder1738466565860",
+      "folderName": "a",
+      "folderOrder": 7,
+      "delete": true,
       "visible": true,
       "files_count": 0,
       "media_files": []
