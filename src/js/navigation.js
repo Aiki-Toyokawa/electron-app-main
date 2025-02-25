@@ -1,8 +1,8 @@
 // src/js/navigation.js
-import { initListPage } from './page1-list.js';
-import { initUrlPage } from './page4-url.js';
-import { initPlayerPage } from './page3-player.js';
+import { initListPage }    from './page1-list.js';
 import { initLibraryPage } from './page2-library.js';
+import { initPlayerPage }  from './page3-player.js';
+import { initUrlPage }     from './page4-url.js';
 
 export function loadPage(page) {
   const content = document.getElementById('content');

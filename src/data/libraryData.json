@@ -38,55 +38,10 @@
       ]
     },
     {
-      "folderId": "folder1738307994419",
-      "folderName": "フォルダー2",
+      "folderId": "folder1740505563737",
+      "folderName": "fef",
       "folderOrder": 2,
-      "delete": true,
-      "visible": true,
-      "files_count": 0,
-      "media_files": []
-    },
-    {
-      "folderId": "folder1738308251340",
-      "folderName": "aw",
-      "folderOrder": 3,
-      "delete": true,
-      "visible": true,
-      "files_count": 0,
-      "media_files": []
-    },
-    {
-      "folderId": "folder1738308256786",
-      "folderName": "フォルダー4",
-      "folderOrder": 4,
-      "delete": true,
-      "visible": true,
-      "files_count": 0,
-      "media_files": []
-    },
-    {
-      "folderId": "folder1738424558834",
-      "folderName": "フォルダー5",
-      "folderOrder": 5,
-      "delete": true,
-      "visible": true,
-      "files_count": 0,
-      "media_files": []
-    },
-    {
-      "folderId": "folder1738426815067",
-      "folderName": "ewfa",
-      "folderOrder": 6,
-      "delete": true,
-      "visible": true,
-      "files_count": 0,
-      "media_files": []
-    },
-    {
-      "folderId": "folder1738466565860",
-      "folderName": "a",
-      "folderOrder": 7,
-      "delete": true,
+      "deletable": true,
       "visible": true,
       "files_count": 0,
       "media_files": []
