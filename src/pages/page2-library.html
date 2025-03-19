@@ -43,14 +43,43 @@
     .create-folder:hover {
       background: #16a047;
     }
+    /* インラインフォーム用エリア（フォルダー一覧更新の対象外） */
+    #folderCreationArea {
+      margin-top: 16px;
+    }
+    #folderCreationForm {
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      display: none;
+    }
+    #folderCreationForm input[type="text"] {
+      width: 80%;
+      padding: 8px;
+      font-size: 14px;
+      margin-right: 8px;
+    }
+    #folderCreationForm button {
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>ライブラリ (フォルダ一覧)</h2>
     <div id="folderList" class="folder-list"></div>
-    <!-- 新規フォルダ追加ボタン -->
-    <button id="createFolderBtn" class="create-folder">新規フォルダ作成</button>
+    <!-- フォルダー作成エリア：インラインフォームはここに固定し、一覧更新の対象外とする -->
+    <div id="folderCreationArea">
+      <button id="createFolderBtn" class="create-folder">新規フォルダ作成</button>
+      <div id="folderCreationForm">
+        <input type="text" id="newFolderName" placeholder="フォルダ名を入力">
+        <button id="submitFolderBtn">作成</button>
+        <button id="cancelFolderBtn">キャンセル</button>
+      </div>
+    </div>
   </div>
 </body>
 </html>

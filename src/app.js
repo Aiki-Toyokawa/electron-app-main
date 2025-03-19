@@ -1,6 +1,5 @@
 // src/app.js
 import { initNavigation } from './js/navigation.js';
-import { modalManager } from './js/modalManager.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log("app.js: DOMContentLoaded fired.");

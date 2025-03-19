@@ -11,9 +11,9 @@ export function loadPage(page) {
   console.log(`loadPage called: ${page}`);
 
   switch (page) {
-    case 'list':
-    case 'url':
-    case 'library': {
+    case 'page1-list':
+    case 'page2-library':
+    case 'page4-url': {
       // プレイヤー以外の場合、video 要素を非表示のホルダーへ戻す
       if (window.globalVideo && hiddenHolder) {
         hiddenHolder.appendChild(window.globalVideo);
@@ -26,9 +26,9 @@ export function loadPage(page) {
         .then(res => res.text())
         .then(html => {
           content.innerHTML = html;
-          if (page === 'list') initListPage();
-          else if (page === 'url') initUrlPage();
-          else if (page === 'library') initLibraryPage();
+          if (page === 'page1-list') initListPage();
+          else if (page === 'page2-library') initLibraryPage();
+          else if (page === 'page4-url') initUrlPage();
         })
         .catch(err => {
           console.error(`Error loading ${page} page`, err);
@@ -36,10 +36,10 @@ export function loadPage(page) {
         });
       break;
     }
-    case 'player': {
+    case 'page3-player': {
       console.log("loading player page...");
       footer.style.display = 'none';
-      fetch('pages/player.html')
+      fetch('pages/page3-player.html')
         .then(res => res.text())
         .then(html => {
           content.innerHTML = html;
@@ -66,5 +66,5 @@ export function initNavigation() {
     });
   });
   // 初期表示は list ページ
-  loadPage('list');
+  loadPage('page1-list');
 }
