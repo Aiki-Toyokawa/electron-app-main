@@ -6,11 +6,19 @@
   <link rel="stylesheet" href="../styles/global.css">
   <style>
     .container { padding: 20px; }
-    .folder-list { display: flex; flex-wrap: wrap; gap: 12px; }
+    .folder-list { 
+      display: flex; flex-wrap: wrap; gap: 12px; 
+      position: relative; /* 各アイテム内の絶対配置に備える */
+    }
     .folder-item {
-      width: 200px; cursor: pointer; text-align: center;
-      padding: 12px; border: 1px solid #ccc; border-radius: 8px;
+      width: 200px; 
+      cursor: pointer; 
+      text-align: center;
+      padding: 12px; 
+      border: 1px solid #ccc; 
+      border-radius: 8px;
       transition: background-color 0.3s ease;
+      position: relative;
     }
     .folder-item:hover { background-color: #f1f1f1; }
     .folder-name { font-weight: bold; margin-bottom: 4px; }
@@ -20,8 +28,16 @@
       background: #1db954; color: #fff; border: none; border-radius: 4px;
     }
     .create-folder:hover { background: #16a047; }
+    /* ゴミ箱アイコン */
+    .delete-icon {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      cursor: pointer;
+      font-size: 18px;
+    }
     /* モーダル用スタイル */
-    #folderModal {
+    #folderModal, #deleteFolderModal {
       display: none;
       position: fixed;
       top: 0; left: 0;
@@ -31,7 +47,8 @@
       justify-content: center;
       z-index: 9999;
     }
-    #folderModal .modal-content {
+    #folderModal .modal-content,
+    #deleteFolderModal .modal-content {
       background: #fff;
       padding: 20px;
       border-radius: 8px;
@@ -44,17 +61,37 @@
       font-size: 14px;
       margin-bottom: 12px;
     }
-    #folderModal button {
+    #folderModal button,
+    #deleteFolderModal button {
       padding: 8px 12px;
       font-size: 14px;
       cursor: pointer;
       margin-right: 8px;
     }
+    /* エラーメッセージ用 */
     #folderModal #folderError {
       color: red;
       font-size: 14px;
       margin-top: 8px;
       display: none;
+    }
+    /* 削除確認モーダル内のボタン配置 */
+    #deleteFolderModal .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    #deleteFolderModal .delete-btn {
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    #deleteFolderModal .cancel-btn {
+      background: #ccc;
+      color: black;
+      border: none;
+      border-radius: 4px;
     }
   </style>
 </head>
@@ -76,6 +113,17 @@
         <button id="okModalBtn">作成</button>
       </div>
       <div id="folderError"></div>
+    </div>
+  </div>
+  
+  <!-- モーダル：削除確認用 -->
+  <div id="deleteFolderModal">
+    <div class="modal-content">
+      <h3>本当に削除しますか？</h3>
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="deleteCancelBtn">キャンセル</button>
+        <button class="delete-btn" id="deleteConfirmBtn">削除</button>
+      </div>
     </div>
   </div>
   

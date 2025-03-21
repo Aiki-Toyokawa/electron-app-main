@@ -8,13 +8,18 @@ export function initLibraryPage() {
   const okModalBtn = document.getElementById('okModalBtn');
   const cancelModalBtn = document.getElementById('cancelModalBtn');
   const folderError = document.getElementById('folderError');
+  
+  const deleteFolderModal = document.getElementById('deleteFolderModal');
+  const deleteCancelBtn = document.getElementById('deleteCancelBtn');
+  const deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
 
-  if (!folderListEl || !createFolderBtn || !folderModal || !folderNameInput || !okModalBtn || !cancelModalBtn || !folderError) {
+  if (!folderListEl || !createFolderBtn || !folderModal || !folderNameInput || !okModalBtn || !cancelModalBtn || !folderError ||
+      !deleteFolderModal || !deleteCancelBtn || !deleteConfirmBtn) {
     console.error("必要なDOM要素が見つかりません");
     return;
   }
-
-  // モーダルを開く：必ず入力欄とエラー状態をリセット
+  
+  // --- フォルダ作成モーダルの処理 ---
   createFolderBtn.onclick = () => {
     folderNameInput.value = "";
     folderNameInput.disabled = false;
@@ -24,7 +29,6 @@ export function initLibraryPage() {
     setTimeout(() => folderNameInput.focus(), 50);
   };
 
-  // モーダルのキャンセル：状態をリセットして閉じる
   cancelModalBtn.onclick = () => {
     folderModal.style.display = 'none';
     folderNameInput.value = "";
@@ -32,7 +36,6 @@ export function initLibraryPage() {
     folderError.style.display = 'none';
   };
 
-  // モーダルの作成ボタン処理
   okModalBtn.onclick = () => {
     const folderName = folderNameInput.value.trim();
     if (!folderName) {
@@ -54,7 +57,7 @@ export function initLibraryPage() {
       folderId: 'folder' + Date.now(),
       folderName: folderName,
       folderOrder: maxOrder + 1,
-      deletable: true,
+      deletable: true, // 作成時は削除可能なフォルダとして作成
       visible: true,
       files_count: 0,
       media_files: []
@@ -62,7 +65,6 @@ export function initLibraryPage() {
     folders.push(newFolder);
     data.folders = folders;
     window.libraryAPI.save(data);
-    // 正常に作成できた場合、モーダルを閉じ、状態をリセットして一覧を更新
     folderModal.style.display = 'none';
     folderNameInput.value = "";
     folderError.textContent = "";
@@ -70,13 +72,32 @@ export function initLibraryPage() {
     updateFolderList();
   };
 
-  // 入力が始まったらエラー表示をクリア
+  // --- 削除確認モーダルの処理 ---
+  // キャンセル
+  deleteCancelBtn.onclick = () => {
+    deleteFolderModal.style.display = 'none';
+  };
+
+  let folderToDeleteId = null; // 削除対象のフォルダIDを保持
+
+  // 確認（削除実行）
+  deleteConfirmBtn.onclick = () => {
+    if (!folderToDeleteId) return;
+    let data = window.libraryAPI.load();
+    data.folders = data.folders.filter(f => f.folderId !== folderToDeleteId);
+    window.libraryAPI.save(data);
+    deleteFolderModal.style.display = 'none';
+    folderToDeleteId = null;
+    updateFolderList();
+  };
+
+  // --- 入力エラークリア ---
   folderNameInput.addEventListener('input', () => {
     folderError.textContent = "";
     folderError.style.display = 'none';
   });
 
-  // フォルダー一覧部分のみを更新する関数
+  // --- フォルダー一覧の更新 ---
   function updateFolderList() {
     fetch('./data/libraryData.json')
       .then(res => {
@@ -90,12 +111,12 @@ export function initLibraryPage() {
         const allFolders = json.folders || [];
         const filtered = allFolders.filter(f => f.visible === true);
         filtered.sort((a, b) => (a.folderOrder || 0) - (b.folderOrder || 0));
-
         folderListEl.innerHTML = '';
+
         filtered.forEach(folder => {
           const item = document.createElement('div');
           item.classList.add('folder-item');
-
+          // フォルダ名と情報
           const nameEl = document.createElement('div');
           nameEl.classList.add('folder-name');
           nameEl.textContent = folder.folderName;
@@ -108,9 +129,25 @@ export function initLibraryPage() {
           item.appendChild(nameEl);
           item.appendChild(infoEl);
 
+          // deletable が true の場合、ゴミ箱アイコンを追加
+          if (folder.deletable) {
+            const deleteIcon = document.createElement('span');
+            deleteIcon.classList.add('delete-icon');
+            deleteIcon.textContent = "🗑️";
+            // クリック時に削除確認モーダルを開く
+            deleteIcon.onclick = (e) => {
+              // イベントのバブリングを防ぐ
+              e.stopPropagation();
+              folderToDeleteId = folder.folderId;
+              openDeleteModal();
+            };
+            item.appendChild(deleteIcon);
+          }
+
           item.addEventListener('click', () => {
             console.log(`フォルダ "${folder.folderName}" がクリックされました。`);
           });
+
           folderListEl.appendChild(item);
         });
       })
@@ -118,6 +155,10 @@ export function initLibraryPage() {
         console.error("libraryData.json の読み込みに失敗しました:", err);
         folderListEl.innerHTML = `<p style="color:red">フォルダ情報の読み込みに失敗しました</p>`;
       });
+  }
+
+  function openDeleteModal() {
+    deleteFolderModal.style.display = 'flex';
   }
 
   // 初回フォルダー一覧表示
