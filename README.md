@@ -52,10 +52,21 @@ root directory
     - imgs
   - components (htmlやcssなどでのコンポーネント定義)
   - data
+    - libraryData.json
     - userData.json (ユーザーのデータや再生履歴などが記録される)
+  - js
+    - common.js
+    - footer-player.js
+    - navigation.js
+    - page1-list.js
+    - page2-library.js
+    - page3-player.js
+    - page4-url.js
   - pages
-    - player2-library.html
-    - folder.html
+    - page1-list.html
+    - page2-library.html
+    - page3-player.html
+    - page4-url.html
   - styles
     - global.css
   - app.js
