@@ -5,65 +5,39 @@
   <title>ライブラリ (フォルダ一覧)</title>
   <link rel="stylesheet" href="../styles/global.css">
   <style>
-    .container {
-      padding: 20px;
-    }
-    .folder-list {
-      display: flex; flex-wrap: wrap; gap: 12px;
-    }
+    .container { padding: 20px; }
+    .folder-list { display: flex; flex-wrap: wrap; gap: 12px; }
     .folder-item {
-      width: 200px;
-      cursor: pointer;
-      text-align: center;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      width: 200px; cursor: pointer; text-align: center;
+      padding: 12px; border: 1px solid #ccc; border-radius: 8px;
       transition: background-color 0.3s ease;
     }
-    .folder-item:hover {
-      background-color: #f1f1f1;
-    }
-    .folder-name {
-      font-weight: bold;
-      margin-bottom: 4px;
-    }
-    .folder-info {
-      font-size: 12px;
-      color: #666;
-    }
+    .folder-item:hover { background-color: #f1f1f1; }
+    .folder-name { font-weight: bold; margin-bottom: 4px; }
+    .folder-info { font-size: 12px; color: #666; }
     .create-folder {
-      margin-top: 16px;
-      padding: 8px 12px;
-      cursor: pointer;
-      background: #1db954;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
+      margin-top: 16px; padding: 8px 12px; cursor: pointer;
+      background: #1db954; color: #fff; border: none; border-radius: 4px;
     }
-    .create-folder:hover {
-      background: #16a047;
-    }
-    /* インラインフォーム用エリア（フォルダー一覧更新の対象外） */
-    #folderCreationArea {
-      margin-top: 16px;
-    }
+    .create-folder:hover { background: #16a047; }
+    /* インラインフォーム用エリア（一覧更新の対象外） */
+    #folderCreationArea { margin-top: 16px; }
     #folderCreationForm {
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      background-color: #f9f9f9;
-      display: none;
+      padding: 12px; border: 1px solid #ccc; border-radius: 8px;
+      background-color: #f9f9f9; display: none;
     }
     #folderCreationForm input[type="text"] {
-      width: 80%;
-      padding: 8px;
-      font-size: 14px;
-      margin-right: 8px;
+      width: 80%; padding: 8px; font-size: 14px; margin-right: 8px;
     }
     #folderCreationForm button {
-      padding: 8px 12px;
+      padding: 8px 12px; font-size: 14px; cursor: pointer;
+    }
+    /* エラーメッセージ表示用 */
+    #folderError {
+      color: red;
       font-size: 14px;
-      cursor: pointer;
+      margin-top: 8px;
+      display: none;
     }
   </style>
 </head>
@@ -71,13 +45,14 @@
   <div class="container">
     <h2>ライブラリ (フォルダ一覧)</h2>
     <div id="folderList" class="folder-list"></div>
-    <!-- フォルダー作成エリア：インラインフォームはここに固定し、一覧更新の対象外とする -->
+    <!-- フォルダ作成エリア -->
     <div id="folderCreationArea">
       <button id="createFolderBtn" class="create-folder">新規フォルダ作成</button>
       <div id="folderCreationForm">
         <input type="text" id="newFolderName" placeholder="フォルダ名を入力">
         <button id="submitFolderBtn">作成</button>
         <button id="cancelFolderBtn">キャンセル</button>
+        <div id="folderError"></div>
       </div>
     </div>
   </div>

@@ -7,59 +7,70 @@ export function initLibraryPage() {
   const newFolderNameInput = document.getElementById('newFolderName');
   const submitFolderBtn = document.getElementById('submitFolderBtn');
   const cancelFolderBtn = document.getElementById('cancelFolderBtn');
+  const errorMsgEl = document.getElementById('folderError');
 
   if (!folderListEl || !createFolderBtn || !folderCreationForm ||
-      !newFolderNameInput || !submitFolderBtn || !cancelFolderBtn) {
+      !newFolderNameInput || !submitFolderBtn || !cancelFolderBtn || !errorMsgEl) {
     console.error("必要なDOM要素が見つかりません。");
     return;
   }
 
-  // 初回のみイベントリスナーを設定（複数回呼ばれても再登録しない）
-  if (!createFolderBtn.dataset.bound) {
-    createFolderBtn.onclick = () => {
-      // 表示前に必ず入力欄をクリアし、disabled状態を解除
-      newFolderNameInput.value = "";
-      newFolderNameInput.disabled = false;
-      folderCreationForm.style.display = 'block';
+  // 入力欄に入力が始まったらエラーメッセージをクリア
+  newFolderNameInput.addEventListener('input', () => {
+    errorMsgEl.style.display = 'none';
+    errorMsgEl.textContent = '';
+  });
+
+  // イベントハンドラの再登録（毎回再登録する）
+  createFolderBtn.onclick = () => {
+    newFolderNameInput.value = "";
+    newFolderNameInput.disabled = false;
+    folderCreationForm.style.display = 'block';
+    errorMsgEl.style.display = 'none';
+    newFolderNameInput.focus();
+  };
+
+  submitFolderBtn.onclick = () => {
+    const folderName = newFolderNameInput.value.trim();
+    if (!folderName) {
+      errorMsgEl.textContent = "フォルダ名を入力してください";
+      errorMsgEl.style.display = 'block';
       newFolderNameInput.focus();
+      return;
+    }
+    let data = window.libraryAPI.load();
+    let folders = data.folders || [];
+    if (folders.some(f => f.folderName === folderName && f.visible)) {
+      errorMsgEl.textContent = "同名フォルダが既に存在します！";
+      errorMsgEl.style.display = 'block';
+      newFolderNameInput.focus();
+      return;
+    }
+    const maxOrder = folders.length > 0 ? Math.max(...folders.map(f => f.folderOrder || 0)) : 0;
+    const newFolder = {
+      folderId: 'folder' + Date.now(),
+      folderName: folderName,
+      folderOrder: maxOrder + 1,
+      deletable: true,
+      visible: true,
+      files_count: 0,
+      media_files: []
     };
-    submitFolderBtn.onclick = () => {
-      const folderName = newFolderNameInput.value.trim();
-      if (!folderName) {
-        alert("フォルダ名を入力してください");
-        newFolderNameInput.focus();
-        return;
-      }
-      let data = window.libraryAPI.load();
-      let folders = data.folders || [];
-      const dup = folders.some(f => f.folderName === folderName && f.visible);
-      if (dup) {
-        alert("同名フォルダが既に存在します！");
-        newFolderNameInput.focus();
-        return;
-      }
-      const maxOrder = folders.length > 0 ? Math.max(...folders.map(f => f.folderOrder || 0)) : 0;
-      const newFolder = {
-        folderId: 'folder' + Date.now(),
-        folderName: folderName,
-        folderOrder: maxOrder + 1,
-        deletable: true,
-        visible: true,
-        files_count: 0,
-        media_files: []
-      };
-      folders.push(newFolder);
-      data.folders = folders;
-      window.libraryAPI.save(data);
-      alert(`フォルダ「${folderName}」を追加しました！`);
-      folderCreationForm.style.display = 'none';
-      updateFolderList();
-    };
-    cancelFolderBtn.onclick = () => {
-      folderCreationForm.style.display = 'none';
-    };
-    createFolderBtn.dataset.bound = 'true';
-  }
+    folders.push(newFolder);
+    data.folders = folders;
+    window.libraryAPI.save(data);
+    // 正常に作成できた場合、エラーメッセージは非表示にしてフォームを閉じる
+    errorMsgEl.style.display = 'none';
+    folderCreationForm.style.display = 'none';
+    newFolderNameInput.value = "";
+    updateFolderList();
+  };
+
+  cancelFolderBtn.onclick = () => {
+    folderCreationForm.style.display = 'none';
+    newFolderNameInput.value = "";
+    errorMsgEl.style.display = 'none';
+  };
 
   // フォルダー一覧部分のみを更新する関数
   function updateFolderList() {
