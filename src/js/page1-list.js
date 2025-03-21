@@ -33,7 +33,7 @@ export function initListPage() {
 
     item.addEventListener('click', () => {
       playVideo(idx);
-      loadPage('player');
+      loadPage('page3-player');
     });
     videoListEl.appendChild(item);
   });

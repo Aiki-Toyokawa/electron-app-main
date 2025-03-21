@@ -54,7 +54,7 @@ root directory
   - data
     - userData.json (ユーザーのデータや再生履歴などが記録される)
   - pages
-    - player.html
+    - player2-library.html
     - folder.html
   - styles
     - global.css
