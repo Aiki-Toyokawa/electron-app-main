@@ -20,20 +20,37 @@
       background: #1db954; color: #fff; border: none; border-radius: 4px;
     }
     .create-folder:hover { background: #16a047; }
-    /* インラインフォーム用エリア（一覧更新の対象外） */
-    #folderCreationArea { margin-top: 16px; }
-    #folderCreationForm {
-      padding: 12px; border: 1px solid #ccc; border-radius: 8px;
-      background-color: #f9f9f9; display: none;
+    /* モーダル用スタイル */
+    #folderModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
     }
-    #folderCreationForm input[type="text"] {
-      width: 80%; padding: 8px; font-size: 14px; margin-right: 8px;
+    #folderModal .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      width: 300px;
+      box-sizing: border-box;
     }
-    #folderCreationForm button {
-      padding: 8px 12px; font-size: 14px; cursor: pointer;
+    #folderModal input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      font-size: 14px;
+      margin-bottom: 12px;
     }
-    /* エラーメッセージ表示用 */
-    #folderError {
+    #folderModal button {
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-right: 8px;
+    }
+    #folderModal #folderError {
       color: red;
       font-size: 14px;
       margin-top: 8px;
@@ -45,16 +62,22 @@
   <div class="container">
     <h2>ライブラリ (フォルダ一覧)</h2>
     <div id="folderList" class="folder-list"></div>
-    <!-- フォルダ作成エリア -->
-    <div id="folderCreationArea">
-      <button id="createFolderBtn" class="create-folder">新規フォルダ作成</button>
-      <div id="folderCreationForm">
-        <input type="text" id="newFolderName" placeholder="フォルダ名を入力">
-        <button id="submitFolderBtn">作成</button>
-        <button id="cancelFolderBtn">キャンセル</button>
-        <div id="folderError"></div>
+    <!-- 新規フォルダ作成ボタン -->
+    <button id="createFolderBtn" class="create-folder">新規フォルダ作成</button>
+  </div>
+  
+  <!-- モーダル：フォルダ作成用 -->
+  <div id="folderModal">
+    <div class="modal-content">
+      <h3>新規フォルダを作成</h3>
+      <input type="text" id="folderNameInput" placeholder="フォルダ名を入力">
+      <div>
+        <button id="okModalBtn">作成</button>
+        <button id="cancelModalBtn">キャンセル</button>
       </div>
+      <div id="folderError"></div>
     </div>
   </div>
+  
 </body>
 </html>

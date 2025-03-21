@@ -3,47 +3,50 @@ export function initLibraryPage() {
   console.log("initLibraryPage");
   const folderListEl = document.getElementById('folderList');
   const createFolderBtn = document.getElementById('createFolderBtn');
-  const folderCreationForm = document.getElementById('folderCreationForm');
-  const newFolderNameInput = document.getElementById('newFolderName');
-  const submitFolderBtn = document.getElementById('submitFolderBtn');
-  const cancelFolderBtn = document.getElementById('cancelFolderBtn');
-  const errorMsgEl = document.getElementById('folderError');
+  const folderModal = document.getElementById('folderModal');
+  const folderNameInput = document.getElementById('folderNameInput');
+  const okModalBtn = document.getElementById('okModalBtn');
+  const cancelModalBtn = document.getElementById('cancelModalBtn');
+  const folderError = document.getElementById('folderError');
 
-  if (!folderListEl || !createFolderBtn || !folderCreationForm ||
-      !newFolderNameInput || !submitFolderBtn || !cancelFolderBtn || !errorMsgEl) {
-    console.error("必要なDOM要素が見つかりません。");
+  if (!folderListEl || !createFolderBtn || !folderModal || !folderNameInput || !okModalBtn || !cancelModalBtn || !folderError) {
+    console.error("必要なDOM要素が見つかりません");
     return;
   }
 
-  // 入力欄に入力が始まったらエラーメッセージをクリア
-  newFolderNameInput.addEventListener('input', () => {
-    errorMsgEl.style.display = 'none';
-    errorMsgEl.textContent = '';
-  });
-
-  // イベントハンドラの再登録（毎回再登録する）
+  // モーダルを開く：必ず入力欄とエラー状態をリセット
   createFolderBtn.onclick = () => {
-    newFolderNameInput.value = "";
-    newFolderNameInput.disabled = false;
-    folderCreationForm.style.display = 'block';
-    errorMsgEl.style.display = 'none';
-    newFolderNameInput.focus();
+    folderNameInput.value = "";
+    folderNameInput.disabled = false;
+    folderError.textContent = "";
+    folderError.style.display = 'none';
+    folderModal.style.display = 'flex';
+    setTimeout(() => folderNameInput.focus(), 50);
   };
 
-  submitFolderBtn.onclick = () => {
-    const folderName = newFolderNameInput.value.trim();
+  // モーダルのキャンセル：状態をリセットして閉じる
+  cancelModalBtn.onclick = () => {
+    folderModal.style.display = 'none';
+    folderNameInput.value = "";
+    folderError.textContent = "";
+    folderError.style.display = 'none';
+  };
+
+  // モーダルの作成ボタン処理
+  okModalBtn.onclick = () => {
+    const folderName = folderNameInput.value.trim();
     if (!folderName) {
-      errorMsgEl.textContent = "フォルダ名を入力してください";
-      errorMsgEl.style.display = 'block';
-      newFolderNameInput.focus();
+      folderError.textContent = "フォルダ名を入力してください";
+      folderError.style.display = 'block';
+      folderNameInput.focus();
       return;
     }
     let data = window.libraryAPI.load();
     let folders = data.folders || [];
     if (folders.some(f => f.folderName === folderName && f.visible)) {
-      errorMsgEl.textContent = "同名フォルダが既に存在します！";
-      errorMsgEl.style.display = 'block';
-      newFolderNameInput.focus();
+      folderError.textContent = "同名フォルダが既に存在します！";
+      folderError.style.display = 'block';
+      folderNameInput.focus();
       return;
     }
     const maxOrder = folders.length > 0 ? Math.max(...folders.map(f => f.folderOrder || 0)) : 0;
@@ -59,18 +62,19 @@ export function initLibraryPage() {
     folders.push(newFolder);
     data.folders = folders;
     window.libraryAPI.save(data);
-    // 正常に作成できた場合、エラーメッセージは非表示にしてフォームを閉じる
-    errorMsgEl.style.display = 'none';
-    folderCreationForm.style.display = 'none';
-    newFolderNameInput.value = "";
+    // 正常に作成できた場合、モーダルを閉じ、状態をリセットして一覧を更新
+    folderModal.style.display = 'none';
+    folderNameInput.value = "";
+    folderError.textContent = "";
+    folderError.style.display = 'none';
     updateFolderList();
   };
 
-  cancelFolderBtn.onclick = () => {
-    folderCreationForm.style.display = 'none';
-    newFolderNameInput.value = "";
-    errorMsgEl.style.display = 'none';
-  };
+  // 入力が始まったらエラー表示をクリア
+  folderNameInput.addEventListener('input', () => {
+    folderError.textContent = "";
+    folderError.style.display = 'none';
+  });
 
   // フォルダー一覧部分のみを更新する関数
   function updateFolderList() {
