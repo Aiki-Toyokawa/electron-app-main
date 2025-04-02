@@ -1,4 +1,6 @@
 // src/js/page2-library.js
+import { loadPage } from './navigation.js';
+
 export function initLibraryPage() {
   console.log("initLibraryPage");
   const folderListEl = document.getElementById('folderList');
@@ -73,14 +75,12 @@ export function initLibraryPage() {
   };
 
   // --- 削除確認モーダルの処理 ---
-  // キャンセル
   deleteCancelBtn.onclick = () => {
     deleteFolderModal.style.display = 'none';
   };
 
   let folderToDeleteId = null; // 削除対象のフォルダIDを保持
 
-  // 確認（削除実行）
   deleteConfirmBtn.onclick = () => {
     if (!folderToDeleteId) return;
     let data = window.libraryAPI.load();
@@ -116,7 +116,7 @@ export function initLibraryPage() {
         filtered.forEach(folder => {
           const item = document.createElement('div');
           item.classList.add('folder-item');
-          // フォルダ名と情報
+
           const nameEl = document.createElement('div');
           nameEl.classList.add('folder-name');
           nameEl.textContent = folder.folderName;
@@ -134,9 +134,7 @@ export function initLibraryPage() {
             const deleteIcon = document.createElement('span');
             deleteIcon.classList.add('delete-icon');
             deleteIcon.textContent = "🗑️";
-            // クリック時に削除確認モーダルを開く
             deleteIcon.onclick = (e) => {
-              // イベントのバブリングを防ぐ
               e.stopPropagation();
               folderToDeleteId = folder.folderId;
               openDeleteModal();
@@ -144,8 +142,11 @@ export function initLibraryPage() {
             item.appendChild(deleteIcon);
           }
 
+          // フォルダー項目クリック時：選択したフォルダーIDをグローバル変数に保存して page5 へ遷移
           item.addEventListener('click', () => {
             console.log(`フォルダ "${folder.folderName}" がクリックされました。`);
+            window.selectedFolderId = folder.folderId;
+            loadPage('page5-eachFolder');
           });
 
           folderListEl.appendChild(item);
