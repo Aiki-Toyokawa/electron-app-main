@@ -41,6 +41,7 @@
       padding: 8px;
       border-radius: 10px;
       transition: background-color 0.3s ease;
+      position: relative;
     }
     .media-item:hover {
       background-color: #c7c7c7;
@@ -57,7 +58,16 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    /* 動画追加モーダル */
+    /* メディア削除用ゴミ箱アイコン */
+    .media-delete-icon {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 1;
+    }
+    /* 動画追加用モーダル */
     #addVideoModal {
       display: none;
       position: fixed;
@@ -107,6 +117,48 @@
       cursor: pointer;
       margin-left: 8px;
     }
+    /* メディア削除確認モーダル */
+    #deleteMediaModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    #deleteMediaModal .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      width: 300px;
+      box-sizing: border-box;
+    }
+    #deleteMediaModal h3 {
+      margin-top: 0;
+    }
+    #deleteMediaModal .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    #deleteMediaModal .delete-btn {
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    #deleteMediaModal .cancel-btn {
+      background: #ccc;
+      color: black;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -125,6 +177,17 @@
       <div id="videoOptions"></div>
       <div class="modal-buttons">
         <button id="cancelAddVideoBtn">キャンセル</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- メディア削除確認モーダル -->
+  <div id="deleteMediaModal">
+    <div class="modal-content">
+      <h3>本当に削除しますか？</h3>
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="mediaDeleteCancelBtn">キャンセル</button>
+        <button class="delete-btn" id="mediaDeleteConfirmBtn">削除</button>
       </div>
     </div>
   </div>

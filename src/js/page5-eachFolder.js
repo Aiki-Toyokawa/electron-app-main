@@ -9,8 +9,12 @@ export function initEachFolderPage() {
   const addVideoModal = document.getElementById('addVideoModal');
   const videoOptionsEl = document.getElementById('videoOptions');
   const cancelAddVideoBtn = document.getElementById('cancelAddVideoBtn');
-
-  // 選択したフォルダーIDは、page2-library.js で window.selectedFolderId に保存されている前提
+  
+  const deleteMediaModal = document.getElementById('deleteMediaModal');
+  const mediaDeleteCancelBtn = document.getElementById('mediaDeleteCancelBtn');
+  const mediaDeleteConfirmBtn = document.getElementById('mediaDeleteConfirmBtn');
+  
+  // 選択されたフォルダーIDは、page2-library.js で window.selectedFolderId に保存される前提
   const folderId = window.selectedFolderId;
   if (!folderId) {
     folderTitleEl.textContent = "フォルダが選択されていません";
@@ -27,33 +31,50 @@ export function initEachFolderPage() {
   // フォルダー名を表示
   folderTitleEl.textContent = folder.folderName;
   
-  // メディア一覧を表示する関数
+  // 変数：削除対象メディアの index を保持
+  let mediaToDeleteIndex = null;
+  
+  // メディア一覧表示関数
   function updateMediaList() {
-    // 再度ライブラリデータから対象フォルダーを取得
     data = window.libraryAPI.load();
     const currentFolder = data.folders.find(f => f.folderId === folderId && f.visible);
     if (!currentFolder) return;
     
     mediaListEl.innerHTML = '';
     if (currentFolder.media_files && currentFolder.media_files.length > 0) {
-      currentFolder.media_files.forEach(media => {
+      currentFolder.media_files.forEach((media, idx) => {
         const item = document.createElement('div');
         item.classList.add('media-item');
         
         const thumb = document.createElement('img');
-        thumb.src = media.thumbnail || 'placeholder.png';
+        thumb.src = media.mediaThumbnail || 'placeholder.png';
         
         const title = document.createElement('div');
         title.classList.add('media-title');
         title.textContent = media.mediaName || '(No Title)';
         
+        // クリック時に再生ページへ遷移する
+        item.addEventListener('click', (e) => {
+          // クリック対象が削除アイコンの場合は除外
+          if (e.target.classList.contains('media-delete-icon')) return;
+          console.log(`メディア "${media.mediaName}" がクリックされました。`);
+          window.selectedMedia = media; // player ページで再生用
+          loadPage('page3-player');
+        });
+        
+        // 削除アイコンの追加
+        const deleteIcon = document.createElement('span');
+        deleteIcon.classList.add('media-delete-icon');
+        deleteIcon.textContent = "🗑️";
+        deleteIcon.onclick = (e) => {
+          e.stopPropagation();
+          mediaToDeleteIndex = idx;
+          openDeleteMediaModal();
+        };
+        
         item.appendChild(thumb);
         item.appendChild(title);
-        
-        item.addEventListener('click', () => {
-          console.log(`メディア "${media.mediaName}" がクリックされました。`);
-          // 必要に応じて動画プレイヤーへの遷移などを実装
-        });
+        item.appendChild(deleteIcon);
         
         mediaListEl.appendChild(item);
       });
@@ -66,18 +87,12 @@ export function initEachFolderPage() {
   
   // --- 動画追加モーダルの処理 ---
   addVideoBtn.onclick = () => {
-    // グローバルな動画一覧 (window.videos) から、既にフォルダに登録されていない動画を抽出
     let availableVideos = [];
     if (window.videos && Array.isArray(window.videos)) {
-      // 重複チェック用に、現在のフォルダの media_files の mediaId を取得
-      const currentFolder = data.folders.find(f => f.folderId === folderId && f.visible);
-      const existingIds = currentFolder && currentFolder.media_files
-        ? currentFolder.media_files.map(m => m.id)
-        : [];
-      availableVideos = window.videos.filter(video => !existingIds.includes(video.id));
+      // ここでは、同じ動画も複数回追加できるように重複チェックは行わない
+      availableVideos = window.videos;
     }
     
-    // 動画選択リストを生成
     videoOptionsEl.innerHTML = '';
     if (availableVideos.length === 0) {
       videoOptionsEl.innerHTML = '<p>追加可能な動画がありません</p>';
@@ -96,22 +111,22 @@ export function initEachFolderPage() {
         option.appendChild(title);
         
         option.addEventListener('click', () => {
-          // 動画をフォルダーに追加
           data = window.libraryAPI.load();
           const folderToUpdate = data.folders.find(f => f.folderId === folderId && f.visible);
           if (folderToUpdate) {
-            // ここでは、動画の id, title, thumbnail を格納
-            const newMedia = {
-              id: video.id,
-              mediaName: video.title,
-              thumbnail: video.thumbnail
-            };
             folderToUpdate.media_files = folderToUpdate.media_files || [];
+            const newOrder = folderToUpdate.media_files.length + 1;
+            const newMedia = {
+              mediaId: video.id,
+              mediaName: video.title,
+              mediaPath: video.src,         // 再生用パス
+              mediaThumbnail: video.thumbnail,
+              mediaOrder: newOrder
+            };
             folderToUpdate.media_files.push(newMedia);
             window.libraryAPI.save(data);
             updateMediaList();
           }
-          // モーダルを閉じる
           addVideoModal.style.display = 'none';
         });
         
@@ -123,6 +138,29 @@ export function initEachFolderPage() {
   
   cancelAddVideoBtn.onclick = () => {
     addVideoModal.style.display = 'none';
+  };
+  
+  // --- メディア削除モーダルの処理 ---
+  function openDeleteMediaModal() {
+    deleteMediaModal.style.display = 'flex';
+  }
+  
+  mediaDeleteCancelBtn.onclick = () => {
+    deleteMediaModal.style.display = 'none';
+    mediaToDeleteIndex = null;
+  };
+  
+  mediaDeleteConfirmBtn.onclick = () => {
+    if (mediaToDeleteIndex === null) return;
+    data = window.libraryAPI.load();
+    const folderToUpdate = data.folders.find(f => f.folderId === folderId && f.visible);
+    if (folderToUpdate && folderToUpdate.media_files) {
+      folderToUpdate.media_files.splice(mediaToDeleteIndex, 1);
+      window.libraryAPI.save(data);
+      updateMediaList();
+    }
+    deleteMediaModal.style.display = 'none';
+    mediaToDeleteIndex = null;
   };
 }
 
